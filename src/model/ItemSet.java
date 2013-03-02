@@ -31,7 +31,6 @@ public class ItemSet implements Comparable<ItemSet>
 		return "ItemSet [items=" + Arrays.toString(items.toArray()) + ", supportCount=" + supportCount + "]";
 	}
 
-	
 	// Two itemsets are equal if they have the same set of items.
 	@Override
 	public int hashCode() {
@@ -78,6 +77,8 @@ public class ItemSet implements Comparable<ItemSet>
 			return 0;
 		}
 		
+		// Compare individual items in the list. At the first mismatch based on the difference in the two sets,
+		// we can determine which list is supposed to lexically appear first.
 		for(int i=0; i < thisItems.size(); i++) {
 			int diff = thisItems.get(i).compareTo(thatItems.get(i));
 			if(diff != 0) {

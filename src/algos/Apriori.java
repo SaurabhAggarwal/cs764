@@ -35,12 +35,10 @@ public class Apriori {
 	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
 	{
 		List<Transaction> transactions = reader.getTransactions(Dataset.T5_I2_D100K);
-		System.out.println("##Transactions one : " + transactions.size());
 		
 		// Store the large itemsets for each level
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
-		int minSupportCount = (int)(0.75 * transactions.size())/100;
-		//int minSupportCount = 5;
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
 		List<ItemSet> largeItemsets = getInitialLargeItemsets(transactions, minSupportCount);
 		
 		int currItemsetSize = 1;
@@ -73,8 +71,9 @@ public class Apriori {
 			
 		}
 		
+		
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
-			System.out.println("#Itemsets for size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
+			System.out.println("Itemsets for size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
 		}
 	}
 
@@ -115,7 +114,11 @@ public class Apriori {
 	{
 		Collections.sort(largeItemSets);
 		
-		// Generate the candidate itemsets
+		/*
+		 * Generate the candidate itemsets by joining the two itemsets in the large itemsets such that except their
+		 * last items match. Include all the matching items + the last item of both the itemsets to generate a new
+		 * candidate itemset. 
+		 */
 		List<ItemSet> candidateItemSets = Lists.newArrayList();
 		List<Integer> items = null;
 		for(int i=0; i < (largeItemSets.size() -1); i++) {
@@ -152,7 +155,10 @@ public class Apriori {
 			}
 		}
 		
-		// Prune the generated candidate itemsets
+		/*
+		 * Prune the generated candidate itemsets by removing all such candidate itemsets whose any (K-1) subset
+		 * does not belong to the list of (K-1) large itemsets.
+		 */
 		List<ItemSet> finalCandidateItemSets = Lists.newArrayList();
 		for(ItemSet c : candidateItemSets) {
 			List<ItemSet> subsets = getSubsets(c);
@@ -204,7 +210,8 @@ public class Apriori {
 	private static List<ItemSet> getInitialLargeItemsets(List<Transaction> transactions, int minSupportCount)
 	{
 		Map<Integer, Integer> itemSetSupportMap = Maps.newHashMap();
-		System.out.println("##Size transactions : " + transactions.size());
+		
+		// Generate support for each item in the list of transactions
 		for(Transaction t : transactions) {
 			List<Integer> items = t.getItems();
 			for(Integer item : items) {
@@ -217,26 +224,14 @@ public class Apriori {
 			}
 		}
 
-		int count = 0;
 		List<ItemSet> largeItemSets = Lists.newArrayList();
 		for(Map.Entry<Integer, Integer> entry : itemSetSupportMap.entrySet()) {
-			count = count + entry.getValue();
 			if(entry.getValue() >= minSupportCount) {
 				largeItemSets.add(new ItemSet(Lists.newArrayList(entry.getKey()), entry.getValue()));
 			}
 		}
 		
-		System.out.println("##Count " + count);
 		return largeItemSets;
 	}
 
-	/*
-	 * Prints the final frequent itemsets generated using Apriori Algorithm
-	 */
-	private static void printLargeItemSets(Map<Integer, List<ItemSet>> largeItemsetsMap)
-	{
-		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemsetsMap.entrySet()) {
-			System.out.println("Itemsets of size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
-		}
-	}
 }

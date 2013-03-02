@@ -1,6 +1,7 @@
 package util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -22,8 +23,7 @@ public class FileReader implements InputReader
 	public static Map<Dataset, String> datasetLocMap = Maps.newHashMap();
 	static {
 		datasetLocMap.put(
-			Dataset.T5_I2_D100K, "/home/shishir/DMProject/resources/synthetic_data_generator/datasets/T5_I2_D100_ASCII_data"
-			//Dataset.T5_I2_D100K, "/home/shishir/DMProject/resources/synthetic_data_generator/datasets/test.data"
+			Dataset.T5_I2_D100K, "/data/T5_I2_D100_ASCII_data"
 		);
 	}
 	
@@ -35,7 +35,7 @@ public class FileReader implements InputReader
 			return transactions;
 		}
 		
-		String fileLoc = datasetLocMap.get(dataset);
+		String fileLoc = getAbsoluteFileLocation(datasetLocMap.get(dataset));
 		if(fileLoc == null) {
 			System.out.println("Failed to locate the file for dataset " + dataset.toString());
 			return transactions;
@@ -59,7 +59,11 @@ public class FileReader implements InputReader
 			++count;
 			String currLine = fileScanner.nextLine().trim();
 			String[] words = currLine.split("[\\s\\t]+");
-			
+
+			/*
+			 * Since all the items for any transaction occur together in the dataset, we can read all the items of a
+			 * transaction one-by-one and keep appending this transaction to the list of transactions.
+			 */
 			int currTid = Integer.parseInt(words[0].trim());
 			int currItemId = Integer.parseInt(words[2].trim());
 			if(prevTid == -1) {
@@ -80,4 +84,18 @@ public class FileReader implements InputReader
 		return transactions;
 	}
 
+	/*
+	 * Returns the absolute file location of the dataset file.
+	 */
+	private static String getAbsoluteFileLocation(String fileLoc)
+	{
+		String absFileLoc = null;
+		try {
+			absFileLoc = new File(".").getCanonicalPath() + fileLoc;
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		return absFileLoc;
+	}
 }

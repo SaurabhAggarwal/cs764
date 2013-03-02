@@ -10,6 +10,7 @@ import java.util.List;
  *  - items : List of items purchased in this transaction.
  *  
  *  If transaction id is not present in the dataset, it is defaulted to customer id.
+ *  @author shishir
  */
 public class Transaction 
 {
@@ -23,7 +24,9 @@ public class Transaction
 		this.cid = cid;
 		this.items = items;
 		
-		// Keep the list of items in a transaction sorted
+		/*
+		 * Keep the list of items in a transaction sorted. This aids in the candidate generation and pruning phase.
+		 */
 		Collections.sort(this.items);
 	}
 
