@@ -5,13 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import util.FileReader;
-import util.InputReader;
-
 import model.Dataset;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
+import util.FileReader;
+import util.InputReader;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -34,20 +33,31 @@ public class Apriori {
 	 */
 	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
 	{
+		long expStartTime = System.currentTimeMillis();
+		
+		long datasetReadStart = System.currentTimeMillis();
 		List<Transaction> transactions = reader.getTransactions(Dataset.T5_I2_D100K);
+		long datasetReadEnd = System.currentTimeMillis();
 		
 		// Store the large itemsets for each level
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
-		List<ItemSet> largeItemsets = getInitialLargeItemsets(transactions, minSupportCount);
 		
+		long initialLargeSetGenStart = System.currentTimeMillis();
+		List<ItemSet> largeItemsets = getInitialLargeItemsets(transactions, minSupportCount);
+		long initialLargeSetGenEnd = System.currentTimeMillis();
+		
+		long largeItemsetGenStart = System.currentTimeMillis();
 		int currItemsetSize = 1;
 		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 		
 		/*
 		 * Keep iterating till no further large itemsets are being generated
 		 */
+		long passStart = System.currentTimeMillis();
+		long passEnd = System.currentTimeMillis();
 		while(!largeItemsets.isEmpty()) {
+			passStart = System.currentTimeMillis();
 			List<ItemSet> candidateKItemsets = generateCandiateItemsets(largeItemsets, currItemsetSize);
 			++currItemsetSize;
 
@@ -69,12 +79,25 @@ public class Apriori {
 				largeItemSetsMap.put(currItemsetSize, largeItemsets);
 			}
 			
+			passEnd = System.currentTimeMillis();
+			System.out.println("Time taken for large-itemset generation pass " + currItemsetSize + " is " + 
+			                    (passEnd - passStart)/1000 + " s ");
 		}
-		
+		long largeItemsetGenEnd = System.currentTimeMillis();
 		
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
 			System.out.println("Itemsets for size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
 		}
+		
+		long expEndTime = System.currentTimeMillis();
+		System.out.println(
+				" Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
+				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
+				" {Dataset Read : " + (datasetReadEnd - datasetReadStart)/1000 + " s } , " +
+				" {1-Large itemset generation : " + (initialLargeSetGenEnd - initialLargeSetGenStart)/1000 + " s } , " +
+				" {Other large Itemset generation : " + (largeItemsetGenEnd - largeItemsetGenStart)/1000 + " ms } "
+		); 
+
 	}
 
 	/*
