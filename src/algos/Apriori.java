@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import model.Dataset;
+import model.HashTreeNode;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
 import util.FileReader;
+import util.HashTreeUtils;
 import util.InputReader;
 
 import com.google.common.collect.Lists;
@@ -61,8 +63,9 @@ public class Apriori {
 			List<ItemSet> candidateKItemsets = generateCandiateItemsets(largeItemsets, currItemsetSize);
 			++currItemsetSize;
 
+			HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateKItemsets, currItemsetSize);
 			for(Transaction t : transactions) {
-				List<ItemSet> candidateSetsInTrans = subset(candidateKItemsets, t);
+				List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, t, 0);
 				for(ItemSet c : candidateSetsInTrans) {
 					c.setSupportCount(c.getSupportCount() + 1);
 				}
@@ -104,7 +107,7 @@ public class Apriori {
 	 * Find which all candidate sets occur in the transaction.
 	 * TODO : Implement this as hash tree for efficiency
 	 */
-	public static List<ItemSet> subset(List<ItemSet> candidateItemsets, Transaction t)
+	public static List<ItemSet> subset(List<ItemSet> candidateItemsets, Transaction t, Integer itemsetSize)
 	{
 		List<ItemSet> transactionSets = Lists.newArrayList();
 		for(ItemSet c : candidateItemsets) {
@@ -129,7 +132,16 @@ public class Apriori {
 
 		return transactionSets;
 	}
-	
+
+	/*
+	 * Find which all candidate sets occur in the transaction using hash tree.
+	 */
+	public static List<ItemSet> subsetEfficient(List<ItemSet> candidateItemsets, Transaction t, Integer itemsetSize)
+	{
+		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemsets, itemsetSize);
+		return HashTreeUtils.findItemsets(hashTreeRoot, t, 0);
+	}
+
 	/*
 	 * Generates candidate itemsets for next iteration based on the large itemsets of the previous iteration
 	 */

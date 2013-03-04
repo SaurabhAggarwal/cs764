@@ -5,9 +5,11 @@ import algos.Apriori;
 import com.google.common.collect.Lists;
 
 import model.Dataset;
+import model.HashTreeNode;
 import model.ItemSet;
 import model.Transaction;
 import util.FileReader;
+import util.HashTreeUtils;
 import util.InputReader;
 
 /**
@@ -24,9 +26,28 @@ public class Driver
 		//System.out.println("Total transactions fetched : " + transactions.size());
 		
 		//testCandidateGeneration();
-		testSubsetFunction();
+		//testSubsetFunction();
+		//testHashTreeUtils();
 	}
 	
+	// Tests the efficient generation of candidate sets from a transaction using hash tree
+	private static void testHashTreeUtils()
+	{
+		List<ItemSet> candidateItemsets = Lists.newArrayList();
+		candidateItemsets.add(new ItemSet(Lists.newArrayList(1,2,3), 0));
+		candidateItemsets.add(new ItemSet(Lists.newArrayList(1,2,5), 0));
+		candidateItemsets.add(new ItemSet(Lists.newArrayList(3,4,6), 0));
+
+		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemsets, 3);
+		HashTreeUtils.printHashTree(hashTreeRoot);
+		
+		List<Integer> items = Lists.newArrayList(0,1,2,3,5);
+		Transaction t = new Transaction(1,1,items);
+		List<ItemSet> itemsets = HashTreeUtils.findItemsets(hashTreeRoot, t, 0);
+		System.out.println("Itemsets : " + itemsets.toString());
+	}
+
+	// Tests the logic for candidate generation of size K from K-1 large itemsets
 	private static void testCandidateGeneration()
 	{
 		List<ItemSet> largeSets = Lists.newArrayList();
@@ -43,6 +64,8 @@ public class Driver
 		
 	}
 	
+	// Tests the logic for subset generation from a transaction. This method is slightly inefficient as compared
+	// to hash tree generation method.
 	private static void testSubsetFunction()
 	{
 		List<ItemSet> largeSets = Lists.newArrayList();
@@ -54,7 +77,7 @@ public class Driver
 		
 		Transaction t = new Transaction(1,1, Lists.newArrayList(1,2,3,4));
 		
-		List<ItemSet> subsets = Apriori.subset(largeSets, t);
+		List<ItemSet> subsets = Apriori.subset(largeSets, t, 3);
 		System.out.println("Subsets : " + subsets.toString());
 		
 	}
