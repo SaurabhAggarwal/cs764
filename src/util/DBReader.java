@@ -2,6 +2,7 @@ package util;
 
 import java.util.List;
 
+import model.Algorithm;
 import model.Dataset;
 import model.Transaction;
 
@@ -15,7 +16,7 @@ public class DBReader implements InputReader
 {
 
 	@Override
-	public List<Transaction> getTransactions(Dataset dataset) {
+	public List<Transaction> getTransactions(Dataset dataset, Algorithm algorithm) {
 		return null;
 	}
 

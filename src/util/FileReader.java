@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import model.Algorithm;
 import model.Dataset;
 import model.Transaction;
 
@@ -28,7 +29,7 @@ public class FileReader implements InputReader
 	}
 	
 	@Override
-	public List<Transaction> getTransactions(Dataset dataset) {
+	public List<Transaction> getTransactions(Dataset dataset, Algorithm algorithm) {
 		List<Transaction> transactions = Lists.newArrayList();
 		if(dataset == null) {
 			System.out.println("Please provide the dataset as an argument");
@@ -71,7 +72,7 @@ public class FileReader implements InputReader
 			}
 
 			if(currTid != prevTid) {
-				transaction = new Transaction(prevTid, prevTid, items);
+				transaction = new Transaction(prevTid, prevTid, items, algorithm);
 				transactions.add(transaction);
 				items = Lists.newArrayList();
 			}

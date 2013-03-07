@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import model.Algorithm;
 import model.Dataset;
 import model.HashTreeNode;
 import model.ItemSet;
@@ -38,7 +39,7 @@ public class Apriori {
 		long expStartTime = System.currentTimeMillis();
 		
 		long datasetReadStart = System.currentTimeMillis();
-		List<Transaction> transactions = reader.getTransactions(Dataset.T5_I2_D100K);
+		List<Transaction> transactions = reader.getTransactions(Dataset.T5_I2_D100K, Algorithm.APRIORI);
 		long datasetReadEnd = System.currentTimeMillis();
 		
 		// Store the large itemsets for each level
@@ -105,7 +106,6 @@ public class Apriori {
 
 	/*
 	 * Find which all candidate sets occur in the transaction.
-	 * TODO : Implement this as hash tree for efficiency
 	 */
 	public static List<ItemSet> subset(List<ItemSet> candidateItemsets, Transaction t, Integer itemsetSize)
 	{

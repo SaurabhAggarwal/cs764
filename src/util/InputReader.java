@@ -2,6 +2,7 @@ package util;
 
 import java.util.List;
 
+import model.Algorithm;
 import model.Dataset;
 import model.Transaction;
 
@@ -16,5 +17,5 @@ public interface InputReader
 	/*
 	 * Returns the list of transactions for the requested dataset.
 	 */
-	List<Transaction> getTransactions(Dataset dataset);
+	List<Transaction> getTransactions(Dataset dataset, Algorithm algorithm);
 }
