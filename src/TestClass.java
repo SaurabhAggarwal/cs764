@@ -1,22 +1,16 @@
 import java.util.List;
-import java.util.Map;
 
-import algos.AIS;
+import model.Algorithm;
+import model.HashTreeNode;
+import model.ItemSet;
+import model.Transaction;
+import util.HashTreeUtils;
 import algos.Apriori;
 
 import com.google.common.collect.Lists;
 
-import model.Algorithm;
-import model.Dataset;
-import model.HashTreeNode;
-import model.ItemSet;
-import model.Transaction;
-import util.FileReader;
-import util.HashTreeUtils;
-import util.InputReader;
-
 /**
- * Driver class for the application
+ * Class for ad-hoc tests.
  * 
  * @author shishir
  *
@@ -31,8 +25,12 @@ public class TestClass
 		//testCandidateGeneration();
 		//testSubsetFunction();
 		//testHashTreeUtils();
-		testAISBasicMethods();
-		testGetExtensionItemsets();
+		//testAISBasicMethods();
+		//testGetExtensionItemsets();
+		//testGenSupportForCandidateSets();
+		ItemSet a = new ItemSet(Lists.newArrayList(1,2,3), 0);
+		ItemSet b = new ItemSet(Lists.newArrayList(1,2,3), 0);
+		System.out.println("#Hashcode --> " + a.hashCode() + ", " + b.hashCode());
 	}
 	
 	// Tests the efficient generation of candidate sets from a transaction using hash tree
@@ -86,53 +84,5 @@ public class TestClass
 		System.out.println("Subsets : " + subsets.toString());
 		
 	}
-	
-	// Test AIS methods here
-	private static void testAISBasicMethods()
-	{
-		Transaction t = new Transaction(1,1, Lists.newArrayList(1,2,3,4), Algorithm.AIS);
-		ItemSet a = new ItemSet(Lists.newArrayList(1,2,7), 0);
-		
-		boolean isItemPresent = AIS.isItemSetInTransaction(t, a);
-		System.out.println("Is itemset present ? " + isItemPresent);
-		
-		List<Transaction> transactions = Lists.newArrayList();
-		transactions.add(t);
-		transactions.add(new Transaction(1,1, Lists.newArrayList(2,3,7,9), Algorithm.AIS));
-		Map<Integer, Integer> itemFreqMap = AIS.getItemFrequencyMap(transactions);
-		
-		for(Map.Entry<Integer, Integer> e : itemFreqMap.entrySet()) {
-			System.out.println("Entry -> " + e.getKey() + ", " + e.getValue());
-		}
-	}
-	
-	private static void testGetExtensionItemsets()
-	{
-		Transaction t = new Transaction(1,1, Lists.newArrayList(1,2,3,4), Algorithm.AIS);
-		List<Transaction> transactions = Lists.newArrayList();
-		transactions.add(t);
-		transactions.add(new Transaction(1,1, Lists.newArrayList(2,3,7,9), Algorithm.AIS));
-		
-		Map<Integer, Integer> itemFreqMap = AIS.getItemFrequencyMap(transactions);
-		for(Map.Entry<Integer, Integer> e : itemFreqMap.entrySet()) {
-			System.out.println("Entry -> " + e.getKey() + ", " + e.getValue());
-		}
-
-		List<ItemSet> extensionSets = 
-				AIS.getExtensionItemsets(t, null, itemFreqMap, 1, 2
-			);
-		
-		for(ItemSet i : extensionSets) {
-			System.out.println(i.toString());
-		}
-		
-		List<ItemSet> candidateSets = Lists.newArrayList();
-		AIS.genSupportForCandidateSets(candidateSets, extensionSets);
-		
-		for(ItemSet i : candidateSets) {
-			System.out.println(i.toString());
-		}
-	}
-	
 	
 }

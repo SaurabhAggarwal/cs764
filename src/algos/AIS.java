@@ -3,7 +3,6 @@ package algos;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import model.Algorithm;
 import model.Dataset;
@@ -12,10 +11,12 @@ import model.MinSup;
 import model.Transaction;
 import util.FileReader;
 import util.InputReader;
+import util.MiningUtils;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Implements AIS algorithm for frequent itemset mining.
@@ -28,9 +29,13 @@ public class AIS {
 	public static void main(String[] args) {
 		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT, new FileReader());
 	}
-	
+
 	/*
 	 * Run AIS algorithm for the specified experiment parameters
+	 * 
+	 * @param dataset - Name of the dataset on which the experiment is to be run.
+	 * @param minSup - Minimum support threshold to classify an itemset as frequent or large.
+	 * @param reader - Interface for reading input transaction data.
 	 */
 	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
 	{
@@ -44,9 +49,13 @@ public class AIS {
 		Map<Integer, List<ItemSet>> largeItemSetsMap = getLargeItemSetsMap(transactions, minSup);
 		long largeItemSetGenEnd = System.currentTimeMillis();
 		
-		System.out.println("Size " + largeItemSetsMap.size());
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
-			System.out.println("Itemsets for size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
+			if(entry.getValue().isEmpty()) {
+				continue;
+			}
+
+			System.out.println("Itemsets for size " + entry.getKey() + " are : " + 
+								Arrays.toString(entry.getValue().toArray()));
 		}
 		
 		long expEndTime = System.currentTimeMillis();
@@ -54,204 +63,143 @@ public class AIS {
 				" Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
 				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
 				" {Dataset Read : " + (datasetReadEnd - datasetReadStart)/1000 + " s } , " +
-				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } , "
+				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
 		); 
-
 	}
 
 	/*
-	 * Generates the list of large itemsets for each pass for these set of transactions using AIS algorithm.
+	 * Returns a map of large itemsets for each pass for the set of transactions.
+	 * 
+	 * @param transactions - List of retail transactions in the dataset.
+	 * @param minSup       - Minimum desired support threshold
+	 * 
+	 * @returns Map of large itemsets for each pass
 	 */
-	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(List<Transaction> transactions, MinSup minSup)
+	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(
+			List<Transaction> transactions, MinSup minSup)
 	{
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
+		
+		List<ItemSet> largeItemsets = 
+				MiningUtils.getInitialLargeItemsets(transactions, minSupportCount);
+		int currItemsetSize = 1;
+		
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
-		
-		List<ItemSet> frontierSets = null;
-		List<ItemSet> largeItemSets = null;
-		List<ItemSet> candidateSets = null;
-		Set<ItemSet> expectedToBeSmallSets = null;
-		int currentPass=0;
-		boolean isFirstPass = true;
-
-		int datasetSize = transactions.size();
-		int minSupportCount = (int)(minSup.getMinSupPercentage() * datasetSize)/100;
-		int minSupport = minSupportCount/datasetSize;
-		
-		Map<Integer, Integer> itemFrequencyMap = getItemFrequencyMap(transactions);
-		// Keep iterating till the frontier set becomes empty
-		do {
-			++currentPass;
-			candidateSets = Lists.newArrayList();
-			largeItemSets = Lists.newArrayList();
-			expectedToBeSmallSets = Sets.newHashSet();
+		largeItemSetsMap.put(currItemsetSize, largeItemsets);
+	
+		while(!largeItemsets.isEmpty()) {
+			int numLargeItemsLastPass = largeItemsets.size();
+			++currItemsetSize; // Pass number = Size of large items in this pass
 			
-			// Make pass over all the transactions
-			int currTransactionNum = 0;
-			for(Transaction t : transactions) {
-				++currTransactionNum;
-				if(isFirstPass) {
-					List<ItemSet> extensionSets = 
-						getExtensionItemsets(t, null, itemFrequencyMap, currTransactionNum, datasetSize
-					);
-					genSupportForCandidateSets(candidateSets, extensionSets);
-				}
-				else {
-					for(ItemSet f : frontierSets) {
-						if(isItemSetInTransaction(t, f)) {
-							List<ItemSet> extensionSets = 
-								getExtensionItemsets(t, f, itemFrequencyMap, currTransactionNum, datasetSize
-							);
-							// Determine which of these extension sets is supposed to be small
-							for(ItemSet i : extensionSets) {
-								if(i.getExpectedSupportCount() < minSupport) {
-									expectedToBeSmallSets.add(i);
+			/*
+			 * We needed a mechanism to quickly find a candidate itemset in the list of candidate
+			 * itemsets. The initial attempt of sorting the candidate itemsets and subsequent binary
+			 * search didn't yield good performance. So, here I have tried to create a hashmap whose
+			 * key is the hashcode of the candidate itemset and the value can be one or more itemsets
+			 * which have the same hashcode value. In case of hashcode collision, we need to compare
+			 * all the objects in the collision list to determine the actual search object.
+			 */
+			ListMultimap<Integer, ItemSet> candidateKItemSetMap = ArrayListMultimap.create();
+
+			for(Transaction txn : transactions) {
+				// Determine which large items of last pass are present in the current transaction.
+				List<ItemSet> largeItemsetsInTxn = 
+						MiningUtils.getSubsetItemsets(largeItemsets, txn, currItemsetSize-1);
+				
+				for(ItemSet largeItemSet : largeItemsetsInTxn) {
+					// Generate 1-extension candidate sets from the large itemsets of prev pass
+					List<ItemSet> extensionItemsets = getExtensionItemsets(txn, largeItemSet);
+					for(ItemSet ext : extensionItemsets) {
+						int hashKey = ext.hashCode();
+						if(candidateKItemSetMap.containsKey(hashKey)) {
+							List<ItemSet> candidateSets = candidateKItemSetMap.get(hashKey);
+							ItemSet candidate = null;
+							for(ItemSet currItemset : candidateSets) {
+								if(currItemset.equals(ext)) {
+									candidate = currItemset;
+									break;
 								}
 							}
 
-							genSupportForCandidateSets(candidateSets, extensionSets);
-							
+							/*
+							 * This case though rare but still can happen. Consider a scenario, where
+							 * an object that came earlier had hashcode h1 and was inserted in the 
+							 * map. Now, when we see another object with the same hashcode h1, which
+							 * has not been inserted into the map yet, we would end up with 'candidate'
+							 * as NULL and thus lead to NPE. In such cases, assume that this keyed
+							 * object is not present in the map and just insert this object in the
+							 * map and continue. 
+							 */
+							if(candidate == null) {
+								ItemSet newItemset = new ItemSet(ext.getItems(), 1);
+								candidateKItemSetMap.put(hashKey, newItemset);
+							}
+							else {
+								candidate.setSupportCount(candidate.getSupportCount()+1);								
+							}
+						}
+						else {
+							ItemSet newItemset = new ItemSet(ext.getItems(), 1);
+							candidateKItemSetMap.put(hashKey, newItemset);
 						}
 					}
 				}
+				
 			}
 			
-			if(isFirstPass) {
-				isFirstPass = false;
-			}
-			
-			// Consolidate
-			System.out.println("Found " + candidateSets.size() + " candidate sets for pass " + currentPass);
-			frontierSets = Lists.newArrayList();
-			for(ItemSet itemset : candidateSets) {
-				boolean hasMinSupport = hasMinSupport(itemset, datasetSize, minSupportCount); 
-				if(hasMinSupport) {
-					largeItemSets.add(itemset);
-					
-					// If the generated candidate itemset was initially predicted to be small but turned out to 
-					// be large, then add it to the frontier set.
-					if(expectedToBeSmallSets.contains(itemset)) {
-						frontierSets.add(itemset);	
-					}
+			// Only retain the candidate sets which have the minimum support
+			largeItemsets = Lists.newArrayList();
+			for(ItemSet candidate : candidateKItemSetMap.values()) {
+				if(MiningUtils.hasMinSupport(candidate, minSupportCount)) {
+					largeItemsets.add(candidate);
 				}
 			}
 			
-			largeItemSetsMap.put(currentPass, largeItemSets);
-		} 
-		while (!(frontierSets == null || frontierSets.isEmpty()));
-		
+			largeItemSetsMap.put(currItemsetSize, largeItemsets);
+			
+			System.out.println(
+				" Current pass#" + currItemsetSize + " --> Large itemsets last pass : " + numLargeItemsLastPass + 
+				" , Candidate sets generated : " + candidateKItemSetMap.values().size() + 
+				" , Large Itemset current pass : " + largeItemsets.size()
+			);
+		}
+
 		return largeItemSetsMap;
 	}
 	
-	/*
-	 * Determines if this itemset has the minimum support as required by the frequent itemset mining algorithm.
+	/* Returns set of 1-extension itemsets corresponding the input large itemset and
+	 * a transaction.
 	 * 
-	 * support = (support count for itemset)/ total dataset size
+	 * @param txn - The transaction which has to be used to generate 1-extension itemsets.
+	 * @param largeItemset - Large itemset which would serve as the seed for generating other itemsets.
+	 * 
+	 * @returns List of 1-extension candidate itemsets for the current pass.
 	 */
-	private static boolean hasMinSupport(ItemSet itemset, int datasetSize, int minSupport) {
-		boolean hasMinSupport = false;
-		if((itemset.getSupportCount()/datasetSize) >= (minSupport/datasetSize)) {
-			hasMinSupport = true;
-		}
-
-		return hasMinSupport;
-	}
-
-	/*
-	 * Generates the possible (K+1) candidate sets from the frontier sets of pass (K).
-	 */
-	public static List<ItemSet> getExtensionItemsets(
-			Transaction transaction, ItemSet frontierSet, Map<Integer, Integer> itemFrequencyMap,
-			int currTransactionCount, int datasetSize)
+	private static List<ItemSet> getExtensionItemsets(Transaction txn, ItemSet largeItemset)
 	{
-		List<ItemSet> extItemSets = Lists.newArrayList();
+		List<ItemSet> extensionItemsets = Lists.newArrayList();
 		
-		List<Integer> baseItems = Lists.newArrayList(); 
-		int maxItemId = -1;
-		// Frontier Set would be null for the first pass
-		if(frontierSet != null) {
-			baseItems = frontierSet.getItems();
-			maxItemId = baseItems.get(baseItems.size() - 1);
-		}
+		List<Integer> largeItems = largeItemset.getItems();
+		List<Integer> txnItems = txn.getItems();
+		int itemsetSize = largeItems.size();
+		int largestItemId = largeItems.get(itemsetSize-1);
 		
-		int[] transactionItems = transaction.getItemVector();
-		for(int i=maxItemId+1; i < transactionItems.length; i++) {
-			if(transactionItems[i] == 1) {
-				List<Integer> newItems = Lists.newArrayList(baseItems);
-				int itemId = i;
-				newItems.add(itemId);
-				
-				/*
-				 * Expected support for a new candidate itemset is product of relative frequency
-				 * of new item with the actual support for base frontier itemset in the remaining
-				 * portion of the database.
-				 */
-				int frontierSupport = 1;
-				if(frontierSet != null) {
-					frontierSupport = (frontierSet.getSupportCount() - currTransactionCount)/datasetSize;	
-				}
-				int newItemRelFrequency = itemFrequencyMap.get(itemId)/datasetSize;
-				int expectedSupport = frontierSupport*newItemRelFrequency;
-				
-				ItemSet newItemset = new ItemSet(newItems, 0);
-				newItemset.setExpectedSupportCount(expectedSupport);
-				extItemSets.add(newItemset);
+		// Generate all the possible 1-extension candidate sets. Since the items in the transaction
+		// are lexically ordered, we only need to consider the items greater than the maximum
+		// item id in the large itemset.
+		for(int i=0; i < txnItems.size(); i++) {
+			int currItemId = txnItems.get(i);
+			if(currItemId <= largestItemId) {
+				continue;
 			}
+			
+			List<Integer> newItems = Lists.newArrayList(largeItems);
+			newItems.add(currItemId);
+			ItemSet newItemset = new ItemSet(newItems, 0);
+			extensionItemsets.add(newItemset);
 		}
 
-		return extItemSets;
+		return extensionItemsets;
 	}
 
-	/*
-	 * Adds the extension sets for the current transaction to candidate sets and generates support for it. 
-	 */
-	public static void genSupportForCandidateSets(List<ItemSet> candidateSets, List<ItemSet> extensionSets)
-	{
-		for(ItemSet ext : extensionSets) {
-			if(candidateSets.contains(ext)) {
-				ext.setSupportCount(ext.getSupportCount() + 1);
-			}
-			else {
-				ext.setSupportCount(1);
-				candidateSets.add(ext);
-			}
-		}
-	}
-	
-	// Checks if the itemset is contained in the transaction
-	public static boolean isItemSetInTransaction(Transaction transaction, ItemSet itemset)
-	{
-		boolean isItemSetInTransaction = true;
-		
-		List<Integer> items = itemset.getItems();
-		int[] itemVector = transaction.getItemVector();
-		for(Integer item : items) {
-			if(itemVector[item] != 1) {
-				isItemSetInTransaction = false;
-				break;
-			}
-		}
-
-		return isItemSetInTransaction;
-	}
-	
-	/*
-	 * Generates the map of all items and their counts in the dataset. This is important for calculating
-	 * the relative frequency of individual items during frontier set generation. 
-	 */
-	public static Map<Integer, Integer> getItemFrequencyMap(List<Transaction> transactions)
-	{
-		Map<Integer, Integer> itemFrequencyMap = Maps.newHashMap();
-		for(Transaction t : transactions) {
-			List<Integer> items = t.getItems();
-			for(Integer item : items) {
-				int count=1;
-				if(itemFrequencyMap.containsKey(item)) {
-					count = count + itemFrequencyMap.get(item);
-				}
-				itemFrequencyMap.put(item, count);
-			}
-		}
-
-		return itemFrequencyMap;
-	}
 }
