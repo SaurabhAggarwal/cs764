@@ -16,5 +16,22 @@ package model;
  *
  */
 public enum Dataset {
-	T5_I2_D100K, T10_I2_D100K, T10_I4_D100K, T20_I2_D100K, T20_I4_D100K, T20_I6_D100K
+	T5_I2_D100K(97048), 
+	T10_I2_D100K(99916), 
+	T10_I4_D100K(98395), 
+	T20_I2_D100K(100000), 
+	T20_I4_D100K(99996), 
+	T20_I6_D100K(99942);
+	
+	// Number of distinct transactions in this dataset.
+	private int numTxns;
+
+	Dataset(int numTxns) {
+		this.numTxns = numTxns;
+	}
+
+	public int getNumTxns() {
+		return numTxns;
+	}
+
 }

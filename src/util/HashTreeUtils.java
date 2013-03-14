@@ -40,7 +40,6 @@ public class HashTreeUtils
 				}
 				
 				parentNode.setMapAtNode(mapAtNode);
-				parentNode.setChild(currNode);
 			}
 			
 			currNode.setLeafNode(true);

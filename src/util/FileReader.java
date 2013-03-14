@@ -19,70 +19,81 @@ import com.google.common.collect.Maps;
  * @author shishir
  *
  */
-public class FileReader implements InputReader 
+public class FileReader extends InputReader 
 {
+	// Map of dataset and their file system locations
 	public static Map<Dataset, String> datasetLocMap = Maps.newHashMap();
 	static {
-		datasetLocMap.put(
-			Dataset.T5_I2_D100K, "/data/T5_I2_D100_ASCII_data"
-		);
+		datasetLocMap.put(Dataset.T5_I2_D100K,  "/data/T5.I2.D100K");
+		datasetLocMap.put(Dataset.T10_I2_D100K, "/data/T10.I2.D100K");
+		datasetLocMap.put(Dataset.T10_I4_D100K, "/data/T10.I4.D100K");
+		datasetLocMap.put(Dataset.T20_I2_D100K, "/data/T20.I2.D100K");
+		datasetLocMap.put(Dataset.T20_I4_D100K, "/data/T20.I4.D100K");
+		datasetLocMap.put(Dataset.T20_I6_D100K, "/data/T20.I6.D100K");
 	}
 	
-	@Override
-	public List<Transaction> getTransactions(Dataset dataset, Algorithm algorithm) {
-		List<Transaction> transactions = Lists.newArrayList();
-		if(dataset == null) {
-			System.out.println("Please provide the dataset as an argument");
-			return transactions;
-		}
+	private Scanner fileScanner = null;
+	
+	private long startTime = System.currentTimeMillis();
+	private long endTime   = System.currentTimeMillis();
+
+	public FileReader(Dataset dataset, Algorithm algorithm)
+	{
+		super(dataset, algorithm);
 		
+		// Get the filesystem location of the dataset file to be read.
 		String fileLoc = getAbsoluteFileLocation(datasetLocMap.get(dataset));
 		if(fileLoc == null) {
 			System.out.println("Failed to locate the file for dataset " + dataset.toString());
-			return transactions;
+			System.exit(0);
 		}
-		
-		Scanner fileScanner = null;
+
+		// Set the scanner here
+		startTime = System.currentTimeMillis();
 		try {
 			fileScanner = new Scanner(new File(fileLoc));
 		}
 		catch(Exception e) {
 			System.err.println("Failed to read the dataset file . Reason : " + e);
-			return transactions;
+			System.exit(0);
 		}
-		
-		int prevTid = -1;
-		List<Integer> items = Lists.newArrayList();
+	}
+	
+	@Override
+	public Transaction getNextTransaction()
+	{
 		Transaction transaction = null;
-		
-		int count=0;
-		while(fileScanner.hasNext()) {
-			++count;
+		if(fileScanner.hasNext()) {
 			String currLine = fileScanner.nextLine().trim();
 			String[] words = currLine.split("[\\s\\t]+");
 
-			/*
-			 * Since all the items for any transaction occur together in the dataset, we can read all the items of a
-			 * transaction one-by-one and keep appending this transaction to the list of transactions.
-			 */
 			int currTid = Integer.parseInt(words[0].trim());
-			int currItemId = Integer.parseInt(words[2].trim());
-			if(prevTid == -1) {
-				prevTid = currTid;
+			List<Integer> currItems = Lists.newArrayList();
+			for(int i=1; i < words.length; i++) {
+				currItems.add(Integer.parseInt(words[i].trim()));
 			}
+			
+			transaction = new Transaction(currTid, currTid, currItems);
+		}
+		
+		return transaction;
+	}
 
-			if(currTid != prevTid) {
-				transaction = new Transaction(prevTid, prevTid, items, algorithm);
-				transactions.add(transaction);
-				items = Lists.newArrayList();
-			}
-
-			items.add(currItemId);
-			prevTid = currTid;
+	@Override
+	public boolean hasNextTransaction()
+	{
+		boolean hasMoreTransactions = fileScanner.hasNext();
+		if(!hasMoreTransactions) {
+			endTime = System.currentTimeMillis();
 		}
 
-		System.out.println("Total transactions : " + count);
-		return transactions;
+		return hasMoreTransactions;
+	}
+
+	@Override
+	public int getDatasetReadTime()
+	{
+		return (int)(endTime - startTime)/1000;
 	}
 
 	/*

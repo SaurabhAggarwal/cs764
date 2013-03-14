@@ -26,8 +26,10 @@ import com.google.common.collect.Maps;
  */
 public class AIS {
 
+	// TODO : Move the run of experiments to a central DRIVER class that would run experiments
+	// for all the configurations and store the results for later analysis.
 	public static void main(String[] args) {
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT, new FileReader());
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 
 	/*
@@ -35,18 +37,13 @@ public class AIS {
 	 * 
 	 * @param dataset - Name of the dataset on which the experiment is to be run.
 	 * @param minSup - Minimum support threshold to classify an itemset as frequent or large.
-	 * @param reader - Interface for reading input transaction data.
 	 */
-	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
+	private static void runExperiment(Dataset dataset, MinSup minSup)
 	{
 		long expStartTime = System.currentTimeMillis();
 		
-		long datasetReadStart = System.currentTimeMillis();
-		List<Transaction> transactions = reader.getTransactions(Dataset.T5_I2_D100K, Algorithm.AIS);
-		long datasetReadEnd = System.currentTimeMillis();
-
 		long largeItemSetGenStart = System.currentTimeMillis();
-		Map<Integer, List<ItemSet>> largeItemSetsMap = getLargeItemSetsMap(transactions, minSup);
+		Map<Integer, List<ItemSet>> largeItemSetsMap = getLargeItemSetsMap(dataset, minSup);
 		long largeItemSetGenEnd = System.currentTimeMillis();
 		
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
@@ -60,9 +57,8 @@ public class AIS {
 		
 		long expEndTime = System.currentTimeMillis();
 		System.out.println(
-				" Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
+				"Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
 				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
-				" {Dataset Read : " + (datasetReadEnd - datasetReadStart)/1000 + " s } , " +
 				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
 		); 
 	}
@@ -70,20 +66,19 @@ public class AIS {
 	/*
 	 * Returns a map of large itemsets for each pass for the set of transactions.
 	 * 
-	 * @param transactions - List of retail transactions in the dataset.
+	 * @param dataset      - For which dataset, this experiment has to be run.
 	 * @param minSup       - Minimum desired support threshold
 	 * 
 	 * @returns Map of large itemsets for each pass
 	 */
-	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(
-			List<Transaction> transactions, MinSup minSup)
+	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(Dataset dataset, MinSup minSup)
 	{
-		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
+		InputReader reader = getDatasetReader(dataset);
 		List<ItemSet> largeItemsets = 
-				MiningUtils.getInitialLargeItemsets(transactions, minSupportCount);
+				MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
 		int currItemsetSize = 1;
-		
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
 		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 	
@@ -101,7 +96,9 @@ public class AIS {
 			 */
 			ListMultimap<Integer, ItemSet> candidateKItemSetMap = ArrayListMultimap.create();
 
-			for(Transaction txn : transactions) {
+			reader = getDatasetReader(dataset);
+			while(reader.hasNextTransaction()) {
+				Transaction txn = reader.getNextTransaction();
 				// Determine which large items of last pass are present in the current transaction.
 				List<ItemSet> largeItemsetsInTxn = 
 						MiningUtils.getSubsetItemsets(largeItemsets, txn, currItemsetSize-1);
@@ -158,12 +155,12 @@ public class AIS {
 			largeItemSetsMap.put(currItemsetSize, largeItemsets);
 			
 			System.out.println(
-				" Current pass#" + currItemsetSize + " --> Large itemsets last pass : " + numLargeItemsLastPass + 
+				"Current pass#" + currItemsetSize + " --> Large itemsets last pass : " + numLargeItemsLastPass + 
 				" , Candidate sets generated : " + candidateKItemSetMap.values().size() + 
 				" , Large Itemset current pass : " + largeItemsets.size()
 			);
 		}
-
+		
 		return largeItemSetsMap;
 	}
 	
@@ -202,4 +199,11 @@ public class AIS {
 		return extensionItemsets;
 	}
 
+	/*
+	 * Gets a iterative reader to the dataset and algorithm corresponding to the current experiment.
+	 */
+	private static InputReader getDatasetReader(Dataset dataset)
+	{
+		return new FileReader(dataset, Algorithm.AIS);
+	}
 }

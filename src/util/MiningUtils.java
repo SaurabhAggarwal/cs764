@@ -26,13 +26,14 @@ public class MiningUtils {
 	 * 
 	 * @returns	List of large-1 itemsets
 	 */
-	public static List<ItemSet> getInitialLargeItemsets(List<Transaction> transactions, int minSupportCount)
+	public static List<ItemSet> getInitialLargeItemsets(InputReader reader, int minSupportCount)
 	{
 		Map<Integer, Integer> itemSetSupportMap = Maps.newHashMap();
 		
 		// Generate support for each item in the list of transactions
-		for(Transaction t : transactions) {
-			List<Integer> items = t.getItems();
+		while(reader.hasNextTransaction()) {
+			Transaction txn = reader.getNextTransaction();
+			List<Integer> items = txn.getItems();
 			for(Integer item : items) {
 				int count = 1;
 				if(itemSetSupportMap.containsKey(item)) {

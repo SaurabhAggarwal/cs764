@@ -18,7 +18,7 @@ public class Transaction
 	private int cid;
 	private List<Integer> items;
 	
-	public Transaction(int tid, int cid, List<Integer> items, Algorithm algo) {
+	public Transaction(int tid, int cid, List<Integer> items) {
 		super();
 		this.tid = tid;
 		this.cid = cid;
