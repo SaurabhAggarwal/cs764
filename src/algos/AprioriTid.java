@@ -30,55 +30,53 @@ public class AprioriTid {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader());
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
 	}
 	
 	/* 
-	 * Given C_bar[k-1] and C[k], find C_bar[k].
+	 * Given C_bar[k-1] and all itemsets, find C_bar[k].
 	 */
-	private static CandidateItemsetBar generate_C_bar(CandidateItemsetBar C_k_1_bar, CandidateItemset Ck_1, CandidateItemset C_k)
+	private static CandidateItemsetBar generate_C_bar(CandidateItemsetBar C_k_1_bar, ItemSet[] allItemsets, CandidateItemset C_k)
 	{
 		//System.out.println("In generate_C_bar().");
 		CandidateItemsetBar toReturn = new CandidateItemsetBar();
-
-		int outer = 1;
-		//System.out.println("C_k_1_bar.getItemsetbars().size() = " + C_k_1_bar.getItemsetbars().size());
+		
 		for(ItemSetBar itemsetbar : C_k_1_bar.getItemsetbars())	//1 transaction
 		{
-			//System.out.println("Outer: " + outer++);
-			//System.out.println(itemsetbar.getCandidateItemsetId());
+			//System.out.println("In transaction: " + itemsetbar.getTid());
 			ItemSetBar k_itemset_bar = new ItemSetBar();
 			k_itemset_bar.setTid(itemsetbar.getTid());
 			
-			List<Integer> prev_itemset_indices = itemsetbar.getCandidateItemsetId();
-			
-			int C_k_index = 0;
-			int inner = 1;
-			for(ItemSet itemset : C_k.getItemsets())
+			SortedMap<Integer, Integer> kitemset_support = new TreeMap<Integer, Integer>();
+			for(Integer Ck_1_id : itemsetbar.getCandidateItemsetId())
 			{
-				//System.out.println("Inner: " + inner++);
-				if(itemset == null)
-					break;
-				int found = 0;
-				List<Integer> subitemset1 = new ArrayList<Integer>(itemset.getItems());
-				subitemset1.remove(subitemset1.size() - 1);
-				List<Integer> subitemset2 = new ArrayList<Integer>(itemset.getItems());
-				subitemset2.remove(subitemset2.size() - 2);
-			
-				for(Integer index : prev_itemset_indices)
+				//System.out.println("Itemset in transaction: " + allItemsets[Ck_1_id].getItems());
+				for(Integer Ck_id : allItemsets[Ck_1_id].getExtensions())
 				{
-					if(Ck_1.getItemsets()[index].getItems().equals(subitemset1))
-						found++;
-					if(Ck_1.getItemsets()[index].getItems().equals(subitemset2))
-						found++;
-					if(found == 2)
+					//System.out.print("Extension = " + C_k.getItemsets()[Ck_id] + "; ");
+					if(kitemset_support.containsKey(Ck_id))
 					{
-						k_itemset_bar.getCandidateItemsetId().add(C_k_index);
-						itemset.incrementSupportCount();
-						break;
+						int support = kitemset_support.get(Ck_id);
+						kitemset_support.put(Ck_id, support + 1);
+						//System.out.println("Support = " + (support + 1));
+					}
+					else
+					{
+						kitemset_support.put(Ck_id, 1);
+						//System.out.println("Support = " + 1);
 					}
 				}
-				C_k_index++;
+				
+			}
+			
+			SortedSet<Integer> keys = new TreeSet<Integer>(kitemset_support.keySet());
+			for(Integer key : keys)
+			{
+				if(kitemset_support.get(key) >= 2)
+				{
+					k_itemset_bar.getCandidateItemsetId().add(key);
+					C_k.getItemsets()[key].incrementSupportCount();
+				}
 			}
 			
 			if(k_itemset_bar.getCandidateItemsetId().size() > 0)
@@ -93,10 +91,15 @@ public class AprioriTid {
 	 */
 	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
 	{
-		List<Transaction> transactions = reader.getTransactions(dataset, Algorithm.APRIORI_TID);
-		int minSupportCount = 2; //(int)(minSup.getMinSupPercentage() * transactions.size())/100;
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		
+		while(reader.hasNextTransaction()) {
+			transactions.add(reader.getNextTransaction());
+		}
+		
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
 		MAX_K = 400 * dataset.getAvgTxnSize();
-		System.out.println(MAX_K);
+		//System.out.println(MAX_K);
 		
 		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
 		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
@@ -108,18 +111,19 @@ public class AprioriTid {
 		getInitialCandidateItemsets(transactions, candidateItemsets[1], candidateItemsetBars[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		//printAll(candidateItemsets[1].getItemsets());
+		System.out.println("\nk = " + 1);
 		print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
-			System.out.println("k = " + k);
+			System.out.println("\nk = " + k);
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
 			//System.out.println(candidateItemsets[k].getItemsets().toString());
-			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1], candidateItemsets[k]);
+			//printAll(candidateItemsets[k].getItemsets());
+			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 			//System.out.println(candidateItemsetBars[k].getItemsetbars().toString());
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 			print(largeItemsets[k], candidateItemsets[k].getItemsets());
-			System.out.println();
 		}
 		
 		System.out.println("The End !");
@@ -127,13 +131,16 @@ public class AprioriTid {
 	
 	private static void printAll(ItemSet[] allItemsets)
 	{
+		int index = 0;
 		for(ItemSet itemset : allItemsets)
 		{
 			if(itemset == null)
 				break;
+			System.out.print(index + ": ");
 			for(Integer j : itemset.getItems())
 				System.out.print(j + " ");
-			System.out.println("- " + itemset.getSupportCount());
+			System.out.println("==> " + itemset.getSupportCount());
+			index++;
 		}
 	}
 	
