@@ -6,7 +6,7 @@ package model;
 public enum Algorithm 
 {
 	APRIORI,
-	//APRIORI_TID,
+	APRIORI_TID,
 	//APRIORI_HYBRID,
 	AIS//,
 	//SETM
