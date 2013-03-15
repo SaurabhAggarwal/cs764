@@ -30,7 +30,7 @@ public class AprioriTid {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.SIMPLE, Algorithm.APRIORI_TID));
 	}
 	
 	/* 
@@ -99,7 +99,7 @@ public class AprioriTid {
 			transactions.add(reader.getNextTransaction());
 		}
 		
-		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
+		int minSupportCount = 2; //(int)(minSup.getMinSupPercentage() * transactions.size())/100;
 		MAX_K = 400 * dataset.getAvgTxnSize();
 		//System.out.println(MAX_K);
 		
