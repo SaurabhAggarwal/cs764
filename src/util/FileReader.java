@@ -24,6 +24,7 @@ public class FileReader extends InputReader
 	// Map of dataset and their file system locations
 	public static Map<Dataset, String> datasetLocMap = Maps.newHashMap();
 	static {
+		datasetLocMap.put(Dataset.SIMPLE,       "/data/simple");
 		datasetLocMap.put(Dataset.T5_I2_D100K,  "/data/T5.I2.D100K");
 		datasetLocMap.put(Dataset.T10_I2_D100K, "/data/T10.I2.D100K");
 		datasetLocMap.put(Dataset.T10_I4_D100K, "/data/T10.I4.D100K");
