@@ -152,7 +152,10 @@ public class Apriori {
 	{
 		// Large itemsets have to be in sorted order for the candidate sets to be generated 
 		// correctly in the subsequent step.
-		Collections.sort(largeItemSets);			
+		if(itemSetSize > 1) {
+			Collections.sort(largeItemSets);			
+		}
+			
 		
 		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
 		// that except their last items match. Include all the matching items + the last item of 

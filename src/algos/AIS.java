@@ -29,7 +29,7 @@ public class AIS {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.REF_TESTDATA, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 	/*

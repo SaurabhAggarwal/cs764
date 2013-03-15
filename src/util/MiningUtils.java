@@ -28,8 +28,8 @@ public class MiningUtils {
 	 */
 	public static List<ItemSet> getInitialLargeItemsets(InputReader reader, int minSupportCount)
 	{
-		// Usage of linked hashmap would ensure that that keys stay in the sorted order.
-		Map<Integer, Integer> itemSetSupportMap = Maps.newLinkedHashMap();
+		// Usage of tree hashmap would ensure that that keys stay in the sorted order.
+		Map<Integer, Integer> itemSetSupportMap = Maps.newTreeMap();
 		
 		// Generate support for each item in the list of transactions
 		while(reader.hasNextTransaction()) {
