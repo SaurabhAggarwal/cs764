@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,13 +20,29 @@ public class ItemSet implements Comparable<ItemSet>
 	private int supportCount;
 	private int expectedSupportCount; // Required in AIS algorithm for prediction of support count
 	
+	private int[] generators;
+	private List<Integer> extensions;
+	
 	public ItemSet(List<Integer> items, int supportCount) {
 		super();
 		this.items = items;
 		this.supportCount = supportCount;
 		this.expectedSupportCount = 0;
+		this.generators = new int[2];
+		this.extensions = new ArrayList<Integer>();
 		
 		Collections.sort(this.items);
+	}
+	
+	public ItemSet()
+	{
+		this(new ArrayList<Integer>(), 0);
+	}
+
+	public ItemSet(List<Integer> items, int supportCount, Integer generator1, Integer generator2) {
+		this(items, supportCount);
+		this.generators[0] = generator1;
+		this.generators[1] = generator2;
 	}
 
 	@Override
@@ -98,6 +115,14 @@ public class ItemSet implements Comparable<ItemSet>
 
 		return 0;
 	}
-
 	
+	public void incrementSupportCount()
+	{
+		this.supportCount++;
+	}
+	
+	public void addExtension(Integer extension)
+	{
+		this.extensions.add(extension);
+	}
 }

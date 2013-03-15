@@ -18,7 +18,7 @@ public enum MinSup {
 
 	private double minSupPercentage;
 	
-	MinSup(double minSupPercentage) {
+	private MinSup(double minSupPercentage) {
 		this.minSupPercentage = minSupPercentage;
 	}
 	

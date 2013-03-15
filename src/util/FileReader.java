@@ -24,7 +24,10 @@ public class FileReader implements InputReader
 	public static Map<Dataset, String> datasetLocMap = Maps.newHashMap();
 	static {
 		datasetLocMap.put(
-			Dataset.T5_I2_D100K, "/data/T5_I2_D100_ASCII_data"
+				Dataset.T5_I2_D100K, "/data/T5_I2_D100_ASCII_data"
+		);
+		datasetLocMap.put(
+				Dataset.SIMPLE, "/data/simple"
 		);
 	}
 	
