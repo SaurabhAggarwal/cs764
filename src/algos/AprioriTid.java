@@ -89,8 +89,10 @@ public class AprioriTid {
 	/*
 	 * Run AprioriTid algorithm for the specified experiment parameters
 	 */
-	private static void runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
+	private static int runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
 	{
+		long expStartTime = System.currentTimeMillis();
+		
 		List<Transaction> transactions = new ArrayList<Transaction>();
 		
 		while(reader.hasNextTransaction()) {
@@ -126,7 +128,12 @@ public class AprioriTid {
 			print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
+		long expEndTime = System.currentTimeMillis();
+		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		System.out.println("Time taken = " + timeTaken + "seconds.");
 		System.out.println("The End !");
+		
+		return timeTaken;
 	}
 	
 	private static void printAll(ItemSet[] allItemsets)
