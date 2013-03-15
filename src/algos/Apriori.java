@@ -28,6 +28,9 @@ import com.google.common.collect.Maps;
  */
 public class Apriori {
 
+	public static void main(String[] args) {
+		runExperiment(Dataset.SIMPLE, MinSup.POINT_SEVEN_FIVE_PERCENT);
+	}
 	/*
 	 * Run Apriori algorithm for the specified experiment parameters.
 	 * 
@@ -42,7 +45,8 @@ public class Apriori {
 		
 		// Store the large itemsets for each level
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
-		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
+		//int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
+		int minSupportCount = 2;
 		
 		long initialLargeSetGenStart = System.currentTimeMillis();
 		InputReader reader = getDatasetReader(dataset);
@@ -149,12 +153,8 @@ public class Apriori {
 	 */
 	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
 	{
-		// Large itemsets of size=1 have already been sorted by the usage of LinkedHashMap
-		// while generating the initial large datatsets. Since sorting time is considerable,
-		// this hack is worth it to save the time for sorting of 1-large itemsets.
-		if(itemSetSize > 1) {
-			Collections.sort(largeItemSets);			
-		}
+		Collections.sort(largeItemSets);			
+
 		
 		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
 		// that except their last items match. Include all the matching items + the last item of 
