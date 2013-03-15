@@ -16,7 +16,6 @@ package model;
  *
  */
 public enum Dataset {
-
 	SIMPLE(3, 2, 4),
 	T5_I2_D100K(5, 2, 97048),
 	T10_I2_D100K(10, 2, 99916),
