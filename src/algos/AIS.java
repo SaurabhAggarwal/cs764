@@ -26,19 +26,15 @@ import com.google.common.collect.Maps;
  */
 public class AIS {
 
-	// TODO : Move the run of experiments to a central DRIVER class that would run experiments
-	// for all the configurations and store the results for later analysis.
-	public static void main(String[] args) {
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
-	}
-
 	/*
 	 * Run AIS algorithm for the specified experiment parameters
 	 * 
 	 * @param dataset - Name of the dataset on which the experiment is to be run.
 	 * @param minSup - Minimum support threshold to classify an itemset as frequent or large.
+	 * 
+	 * @return Time taken to finish this experiment.
 	 */
-	private static void runExperiment(Dataset dataset, MinSup minSup)
+	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
 		long expStartTime = System.currentTimeMillis();
 		
@@ -60,7 +56,9 @@ public class AIS {
 				"Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
 				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
 				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
-		); 
+		);
+		
+		return (int)(expEndTime - expStartTime)/1000;
 	}
 
 	/*

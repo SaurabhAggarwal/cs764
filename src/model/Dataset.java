@@ -16,7 +16,7 @@ package model;
  *
  */
 public enum Dataset {
-	T5_I2_D100K(97048), 
+	T5_I2_D100K(97048),
 	T10_I2_D100K(99916), 
 	T10_I4_D100K(98395), 
 	T20_I2_D100K(100000), 

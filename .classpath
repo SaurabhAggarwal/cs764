@@ -3,5 +3,12 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/guava.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/jfreechart-1.0.14.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/gnujaxp.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/iText-2.1.5.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/servlet.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart/lib/swtgraphics2d.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

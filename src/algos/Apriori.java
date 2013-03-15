@@ -1,5 +1,6 @@
 package algos;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,15 +28,15 @@ import com.google.common.collect.Maps;
  */
 public class Apriori {
 
-	public static void main(String[] args)
-	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
-	}
-
 	/*
-	 * Run Apriori algorithm for the specified experiment parameters
+	 * Run Apriori algorithm for the specified experiment parameters.
+	 * 
+	 * @param dataset - Dataset on which the experiment has to be run.
+	 * @param minSup  - Minimum support desired for this experiment run.
+	 * 
+	 * @return Time taken to complete this experiment.
 	 */
-	private static void runExperiment(Dataset dataset, MinSup minSup)
+	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
 		long expStartTime = System.currentTimeMillis();
 		
@@ -60,7 +61,7 @@ public class Apriori {
 		long passEnd = System.currentTimeMillis();
 		while(!largeItemsets.isEmpty()) {
 			passStart = System.currentTimeMillis();
-			List<ItemSet> candidateKItemsets = generateCandiateItemsets(largeItemsets, currItemsetSize);
+			List<ItemSet> candidateKItemsets = generateCandidateItemsets(largeItemsets, currItemsetSize);
 			++currItemsetSize;
 
 			HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateKItemsets, currItemsetSize);
@@ -102,6 +103,7 @@ public class Apriori {
 				" {Other large Itemset generation : " + (largeItemsetGenEnd - largeItemsetGenStart)/1000 + " ms } "
 		); 
 
+		return (int)(expEndTime - expStartTime)/1000;
 	}
 
 	/*
@@ -145,15 +147,18 @@ public class Apriori {
 	/*
 	 * Generates candidate itemsets for next iteration based on the large itemsets of the previous iteration
 	 */
-	public static List<ItemSet> generateCandiateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
+	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
 	{
-		Collections.sort(largeItemSets);
+		// Large itemsets of size=1 have already been sorted by the usage of LinkedHashMap
+		// while generating the initial large datatsets. Since sorting time is considerable,
+		// this hack is worth it to save the time for sorting of 1-large itemsets.
+		if(itemSetSize > 1) {
+			Collections.sort(largeItemSets);			
+		}
 		
-		/*
-		 * Generate the candidate itemsets by joining the two itemsets in the large itemsets such that except their
-		 * last items match. Include all the matching items + the last item of both the itemsets to generate a new
-		 * candidate itemset. 
-		 */
+		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
+		// that except their last items match. Include all the matching items + the last item of 
+		// both the itemsets to generate a new candidate itemset. 
 		List<ItemSet> candidateItemSets = Lists.newArrayList();
 		List<Integer> items = null;
 		for(int i=0; i < (largeItemSets.size() -1); i++) {
@@ -190,10 +195,8 @@ public class Apriori {
 			}
 		}
 		
-		/*
-		 * Prune the generated candidate itemsets by removing all such candidate itemsets whose any (K-1) subset
-		 * does not belong to the list of (K-1) large itemsets.
-		 */
+		// Prune the generated candidate itemsets by removing all such candidate itemsets whose 
+		// any (K-1) subset does not belong to the list of (K-1) large itemsets.
 		List<ItemSet> finalCandidateItemSets = Lists.newArrayList();
 		for(ItemSet c : candidateItemSets) {
 			List<ItemSet> subsets = getSubsets(c);
@@ -219,23 +222,17 @@ public class Apriori {
 	 */
 	private static List<ItemSet> getSubsets(ItemSet itemset)
 	{
-		List<ItemSet> subsets = Lists.newArrayList();
+		List<ItemSet> subsets = new ArrayList<ItemSet>();
 		
 		List<Integer> items = itemset.getItems();
-		for(int i=0; i < (items.size() - 1); i++) {
-			List<Integer> currItems = Lists.newArrayList();
-			for(int j=0; j < items.size(); j++) {
-				if(j == (i+1)) {
-					continue;
-				}
-				currItems.add(items.get(j));
-			}
-			
+		for(int i = 0; i < items.size(); i++) {
+			// Generate a new itemset containing all the items and sequentially remove one item
+			// to generate K-1 subset. Spotted by @Saurabh.
+			List<Integer> currItems = new ArrayList<Integer>(items);
+			currItems.remove(items.size() - 1 - i);
 			subsets.add(new ItemSet(currItems, 0));
 		}
 
-		subsets.add(new ItemSet(items.subList(1, items.size()), 0));
-		
 		return subsets;
 	}
 
