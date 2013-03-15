@@ -18,16 +18,14 @@ public class ItemSet implements Comparable<ItemSet>
 {
 	private List<Integer> items;
 	private int supportCount;
-	private int expectedSupportCount; // Required in AIS algorithm for prediction of support count
 	
 	private int[] generators;
 	private List<Integer> extensions;
 	
 	public ItemSet(List<Integer> items, int supportCount) {
 		super();
-		this.items = items;
+		setItems(items);
 		this.supportCount = supportCount;
-		this.expectedSupportCount = 0;
 		this.generators = new int[2];
 		this.extensions = new ArrayList<Integer>();
 		
@@ -78,6 +76,7 @@ public class ItemSet implements Comparable<ItemSet>
 
 	public void setItems(List<Integer> items) {
 		this.items = items;
+		Collections.sort(this.items); // Items must be sorted for the frequent itemset mining algos
 	}
 
 	public int getSupportCount() {
@@ -86,14 +85,6 @@ public class ItemSet implements Comparable<ItemSet>
 
 	public void setSupportCount(int supportCount) {
 		this.supportCount = supportCount;
-	}
-
-	public int getExpectedSupportCount() {
-		return expectedSupportCount;
-	}
-
-	public void setExpectedSupportCount(int expectedSupportCount) {
-		this.expectedSupportCount = expectedSupportCount;
 	}
 
 	@Override

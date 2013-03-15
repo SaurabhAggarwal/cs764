@@ -17,13 +17,11 @@ public class HashTreeNode
 	private Map<Integer, HashTreeNode> mapAtNode;
 	private boolean isLeafNode;
 	private List<ItemSet> itemsets;
-	private HashTreeNode child;
 	
 	public HashTreeNode() {
 		mapAtNode = Maps.newHashMap();
 		isLeafNode = false;
 		itemsets = Lists.newArrayList();
-		child = null;
 	}
 
 	@Override
@@ -60,12 +58,4 @@ public class HashTreeNode
 		this.itemsets = itemsets;
 	}
 
-	public HashTreeNode getChild() {
-		return child;
-	}
-
-	public void setChild(HashTreeNode child) {
-		this.child = child;
-	}
-	
 }
