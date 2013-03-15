@@ -26,6 +26,12 @@ import com.google.common.collect.Maps;
  */
 public class AIS {
 
+	
+	public static void main(String[] args)
+	{
+		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT);
+	}
+	
 	/*
 	 * Run AIS algorithm for the specified experiment parameters
 	 * 
@@ -81,6 +87,7 @@ public class AIS {
 		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 	
 		while(!largeItemsets.isEmpty()) {
+			print(largeItemsets);
 			int numLargeItemsLastPass = largeItemsets.size();
 			++currItemsetSize; // Pass number = Size of large items in this pass
 			
@@ -162,6 +169,16 @@ public class AIS {
 		return largeItemSetsMap;
 	}
 	
+	private static void print(List<ItemSet> largeItemsets) {
+		// TODO Auto-generated method stub
+		for(ItemSet itemset : largeItemsets)
+		{
+			for(Integer i : itemset.getItems())
+				System.out.print(i + " ");
+			System.out.println(" - " + itemset.getSupportCount());
+		}
+	}
+
 	/* Returns set of 1-extension itemsets corresponding the input large itemset and
 	 * a transaction.
 	 * 

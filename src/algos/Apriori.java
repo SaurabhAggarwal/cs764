@@ -28,9 +28,6 @@ import com.google.common.collect.Maps;
  */
 public class Apriori {
 
-	public static void main(String[] args) {
-		runExperiment(Dataset.SIMPLE, MinSup.POINT_SEVEN_FIVE_PERCENT);
-	}
 	/*
 	 * Run Apriori algorithm for the specified experiment parameters.
 	 * 
@@ -39,14 +36,18 @@ public class Apriori {
 	 * 
 	 * @return Time taken to complete this experiment.
 	 */
+	public static void main(String[] args)
+	{
+		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT);
+	}
+	
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
 		long expStartTime = System.currentTimeMillis();
 		
 		// Store the large itemsets for each level
 		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
-		//int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
-		int minSupportCount = 2;
+		int minSupportCount = 2; //(int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
 		long initialLargeSetGenStart = System.currentTimeMillis();
 		InputReader reader = getDatasetReader(dataset);
@@ -64,6 +65,7 @@ public class Apriori {
 		long passStart = System.currentTimeMillis();
 		long passEnd = System.currentTimeMillis();
 		while(!largeItemsets.isEmpty()) {
+			print(largeItemsets);
 			passStart = System.currentTimeMillis();
 			List<ItemSet> candidateKItemsets = generateCandidateItemsets(largeItemsets, currItemsetSize);
 			++currItemsetSize;
@@ -110,6 +112,16 @@ public class Apriori {
 		return (int)(expEndTime - expStartTime)/1000;
 	}
 
+	private static void print(List<ItemSet> largeItemsets) {
+		// TODO Auto-generated method stub
+		for(ItemSet itemset : largeItemsets)
+		{
+			for(Integer i : itemset.getItems())
+				System.out.print(i + " ");
+			System.out.println(" - " + itemset.getSupportCount());
+		}
+	}
+
 	/*
 	 * Find which all candidate sets occur in the transaction.
 	 */
@@ -153,8 +165,12 @@ public class Apriori {
 	 */
 	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
 	{
-		Collections.sort(largeItemSets);			
-
+		// Large itemsets of size=1 have already been sorted by the usage of LinkedHashMap
+		// while generating the initial large datatsets. Since sorting time is considerable,
+		// this hack is worth it to save the time for sorting of 1-large itemsets.
+		if(itemSetSize > 1) {
+			Collections.sort(largeItemSets);			
+		}
 		
 		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
 		// that except their last items match. Include all the matching items + the last item of 

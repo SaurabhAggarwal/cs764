@@ -86,6 +86,16 @@ public class ItemSet implements Comparable<ItemSet>
 	public void setSupportCount(int supportCount) {
 		this.supportCount = supportCount;
 	}
+	
+	public int[] getGenerators()
+	{
+		return this.generators;
+	}
+	
+	public List<Integer> getExtensions()
+	{
+		return this.extensions;
+	}
 
 	@Override
 	public int compareTo(ItemSet that) {
