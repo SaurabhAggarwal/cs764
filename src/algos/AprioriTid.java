@@ -30,7 +30,7 @@ public class AprioriTid {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.SIMPLE, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
 	}
 	
 	/* 
@@ -99,7 +99,7 @@ public class AprioriTid {
 			transactions.add(reader.getNextTransaction());
 		}
 		
-		int minSupportCount = 2; //(int)(minSup.getMinSupPercentage() * transactions.size())/100;
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
 		MAX_K = 400 * dataset.getAvgTxnSize();
 		//System.out.println(MAX_K);
 		
@@ -120,10 +120,7 @@ public class AprioriTid {
 			System.out.println("\nk = " + k);
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
-			//System.out.println(candidateItemsets[k].getItemsets().toString());
-			//printAll(candidateItemsets[k].getItemsets());
 			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
-			//System.out.println(candidateItemsetBars[k].getItemsetbars().toString());
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 			print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}

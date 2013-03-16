@@ -29,7 +29,7 @@ public class AIS {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.SIMPLE, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 	/*
@@ -175,7 +175,7 @@ public class AIS {
 		{
 			for(Integer i : itemset.getItems())
 				System.out.print(i + " ");
-			System.out.println(" - " + itemset.getSupportCount());
+			System.out.println("- " + itemset.getSupportCount());
 		}
 	}
 
