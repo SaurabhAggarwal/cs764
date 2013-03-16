@@ -16,23 +16,32 @@ package model;
  *
  */
 public enum Dataset {
-
-	SIMPLE(3, 2, 4),
-	T5_I2_D100K(5, 2, 97048),
-	T10_I2_D100K(10, 2, 99916),
-	T10_I4_D100K(10, 4, 98395),
-	T20_I2_D100K(20, 2, 100000),
-	T20_I4_D100K(20, 4, 99996),
-	T20_I6_D100K(20, 6, 99942);
+	REF_TESTDATA(3, 2, 4, "/data/simple", 1),
+	T5_I2_D100K(5, 2, 97048,    "/data/T5.I2.D100K",  2),
+	T10_I2_D100K(10, 2, 99916,  "/data/T10.I2.D100K", 3),
+	T10_I4_D100K(10, 4, 98395,  "/data/T10.I4.D100K", 4),
+	T20_I2_D100K(20, 2, 100000, "/data/T20.I2.D100K", 5),
+	T20_I4_D100K(20, 4, 99996,  "/data/T20.I4.D100K", 6),
+	T20_I6_D100K(20, 6, 99942,  "/data/T20.I6.D100K", 7);
 
 	private int avgTxnSize, avgMaxLargeItemsetSize;
+	// Total number of distinct transactions in this dataset
 	private int numTxns;
 	
-	private Dataset(int avgTxnSize, int avgMaxLargeItemsetSize, int numTxns)
+	// The filesystem location where this dataset is stored
+	private String dataFileLocation;
+	// The database id for this dataset
+	private int datasetDBId;
+
+	private Dataset(
+			int avgTxnSize, int avgMaxLargeItemsetSize, int numTxns, 
+			String dataFileLocation, int datasetDBId)
 	{
 		this.avgTxnSize = avgTxnSize;
 		this.avgMaxLargeItemsetSize = avgMaxLargeItemsetSize;
 		this.numTxns = numTxns;
+		this.dataFileLocation = dataFileLocation;
+		this.datasetDBId = datasetDBId;
 	}
 	
 	public int getAvgTxnSize()
@@ -45,8 +54,15 @@ public enum Dataset {
 		return this.avgMaxLargeItemsetSize;
 	}
 	
-	// Number of distinct transactions in this dataset.
 	public int getNumTxns() {
 		return numTxns;
+	}
+
+	public String getDataFileLocation() {
+		return dataFileLocation;
+	}
+
+	public int getDatasetDBId() {
+		return datasetDBId;
 	}
 }

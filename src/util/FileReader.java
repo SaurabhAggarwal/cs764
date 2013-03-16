@@ -3,7 +3,6 @@ package util;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 import model.Algorithm;
@@ -11,7 +10,6 @@ import model.Dataset;
 import model.Transaction;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Reads input transactions stored in filesystem.
@@ -21,18 +19,6 @@ import com.google.common.collect.Maps;
  */
 public class FileReader extends InputReader 
 {
-	// Map of dataset and their file system locations
-	public static Map<Dataset, String> datasetLocMap = Maps.newHashMap();
-	static {
-		datasetLocMap.put(Dataset.SIMPLE, "/data/simple");
-		datasetLocMap.put(Dataset.T5_I2_D100K,  "/data/T5.I2.D100K");
-		datasetLocMap.put(Dataset.T10_I2_D100K, "/data/T10.I2.D100K");
-		datasetLocMap.put(Dataset.T10_I4_D100K, "/data/T10.I4.D100K");
-		datasetLocMap.put(Dataset.T20_I2_D100K, "/data/T20.I2.D100K");
-		datasetLocMap.put(Dataset.T20_I4_D100K, "/data/T20.I4.D100K");
-		datasetLocMap.put(Dataset.T20_I6_D100K, "/data/T20.I6.D100K");
-	}
-	
 	private Scanner fileScanner = null;
 	
 	private long startTime = System.currentTimeMillis();
@@ -43,7 +29,7 @@ public class FileReader extends InputReader
 		super(dataset, algorithm);
 		
 		// Get the filesystem location of the dataset file to be read.
-		String fileLoc = getAbsoluteFileLocation(datasetLocMap.get(dataset));
+		String fileLoc = getAbsoluteFileLocation(dataset.getDataFileLocation());
 		if(fileLoc == null) {
 			System.out.println("Failed to locate the file for dataset " + dataset.toString());
 			System.exit(0);

@@ -1,7 +1,6 @@
 package algos;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +8,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import com.google.common.collect.Lists;
 
 import model.Algorithm;
 import model.Dataset;
@@ -24,13 +21,15 @@ import model.aprioritid.LargeItemset;
 import util.FileReader;
 import util.InputReader;
 
+import com.google.common.collect.Lists;
+
 public class AprioriTid {
 	
 	private static int MAX_K;
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.REF_TESTDATA, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.REF_TESTDATA, Algorithm.APRIORI_TID));
 	}
 	
 	/* 

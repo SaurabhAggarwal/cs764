@@ -1,5 +1,7 @@
+import algos.Apriori;
 import model.Algorithm;
 import model.Dataset;
+import model.MinSup;
 import model.Transaction;
 import util.FileReader;
 import util.InputReader;
@@ -14,8 +16,16 @@ public class TestClass
 {
 	public static void main(String[] args) {
 		testFileReader();
+		testAlgosOnRefDataSet();
 	}
 	
+	/*
+	 * Test the frequent itemset mining algo on the reference dataset given in the paper.
+	 */
+	private static void testAlgosOnRefDataSet()
+	{
+		Apriori.runExperiment(Dataset.REF_TESTDATA, MinSup.REF_TESTDATA_MINSUP);
+	}
 	
 	private static void testFileReader()
 	{
