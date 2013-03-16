@@ -1,6 +1,7 @@
 package algos;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +10,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.google.common.collect.Lists;
+
 import model.Algorithm;
 import model.Dataset;
+import model.HashTreeNode;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
@@ -19,17 +23,16 @@ import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.ItemSetBar;
 import model.aprioritid.LargeItemset;
 import util.FileReader;
+import util.HashTreeUtils;
 import util.InputReader;
 
-import com.google.common.collect.Lists;
-
-public class AprioriTid {
+public class AprioriHybrid {
 	
 	private static int MAX_K;
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.REF_TESTDATA, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.REF_TESTDATA, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
 	}
 	
 	/* 
@@ -344,5 +347,96 @@ public class AprioriTid {
 		}
 
 		return subsets;
+	}
+	
+	
+	
+	
+	
+	
+	/******************************************************************
+	 * APRIORI PART *
+	 *****************************************************************/
+	
+	/*
+	 * Find which all candidate sets occur in the transaction using hash tree.
+	 */
+	public static List<ItemSet> subsetEfficient(List<ItemSet> candidateItemsets, Transaction txn, Integer itemsetSize)
+	{
+		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemsets, itemsetSize);
+		return HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+	}
+
+	/*
+	 * Generates candidate itemsets for next iteration based on the large itemsets of the previous iteration
+	 */
+	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
+	{
+		// Large itemsets of size=1 have already been sorted by the usage of LinkedHashMap
+		// while generating the initial large datatsets. Since sorting time is considerable,
+		// this hack is worth it to save the time for sorting of 1-large itemsets.
+		if(itemSetSize > 1) {
+			Collections.sort(largeItemSets);			
+		}
+		
+		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
+		// that except their last items match. Include all the matching items + the last item of 
+		// both the itemsets to generate a new candidate itemset. 
+		List<ItemSet> candidateItemSets = Lists.newArrayList();
+		List<Integer> items = null;
+		for(int i=0; i < (largeItemSets.size() -1); i++) {
+			for(int j=i+1; j < largeItemSets.size(); j++ ) {
+				List<Integer> outerItems = largeItemSets.get(i).getItems();
+				List<Integer> innerItems = largeItemSets.get(j).getItems();
+		
+				if((itemSetSize -1) > 0) {
+					boolean isMatch = true;
+					for(int k=0; k < (itemSetSize -1); k++) {
+						if(!outerItems.get(k).equals(innerItems.get(k))) {
+							isMatch = false;
+							break;
+						}
+					}
+					if(isMatch) {
+						items = Lists.newArrayList();
+						items.addAll(outerItems);
+						items.add(innerItems.get(itemSetSize-1));
+						
+						candidateItemSets.add(new ItemSet(items, 0));
+					}
+				}
+				// Handle the base case for generation of candidate itemsets for k-1 = 1.
+				else {
+					if(outerItems.get(0) < innerItems.get(0)) {
+						items = Lists.newArrayList();
+						items.add(outerItems.get(0));
+						items.add(innerItems.get(0));
+						
+						candidateItemSets.add(new ItemSet(items, 0));
+					}
+				}
+			}
+		}
+		
+		// Prune the generated candidate itemsets by removing all such candidate itemsets whose 
+		// any (K-1) subset does not belong to the list of (K-1) large itemsets.
+		List<ItemSet> finalCandidateItemSets = Lists.newArrayList();
+		for(ItemSet c : candidateItemSets) {
+			List<ItemSet> subsets = getSubsets(c);
+			
+			boolean isValidCandidate = true;
+			for(ItemSet s : subsets) {
+				if(!largeItemSets.contains(s)) {
+					isValidCandidate = false;
+					break;
+				}
+			}
+			
+			if(isValidCandidate) {
+				finalCandidateItemSets.add(c);
+			}
+		}
+
+		return finalCandidateItemSets;
 	}
 }
