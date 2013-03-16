@@ -23,9 +23,13 @@ public class RunAllExperiments {
 		int experimentRunTime = 0;
 		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = null;
 		for(Dataset dataset : Dataset.values()) {
-			algoRunTimeMap = Maps.newLinkedHashMap();
+			algoRunTimeMap = Maps.newTreeMap();
 			for(MinSup minSup : MinSup.values()) {
-				
+				// This is just for testing. Ignore it during actual chart generation.
+				if(minSup.equals(MinSup.REF_TESTDATA_MINSUP)) {
+					continue;
+				}
+
 				// Apriori
 				experimentRunTime = Apriori.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI, minSup, experimentRunTime);

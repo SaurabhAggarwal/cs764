@@ -12,7 +12,7 @@ import model.HashTreeNode;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
-import util.FileReader;
+import util.DBReader;
 import util.HashTreeUtils;
 import util.InputReader;
 import util.MiningUtils;
@@ -242,7 +242,7 @@ public class Apriori {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new FileReader(dataset, Algorithm.APRIORI);
+		return new DBReader(dataset, Algorithm.APRIORI);
 	}
 
 }

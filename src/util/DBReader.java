@@ -1,5 +1,19 @@
 package util;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
+import model.Algorithm;
+import model.Dataset;
+import model.Transaction;
+
 
 /**
  * Reads input transactions stored in database
@@ -7,7 +21,91 @@ package util;
  * @author shishir
  *
  */
-public class DBReader //implements InputReader
+public class DBReader extends InputReader
 {
-	// TODO : Implement this later
+	private int currTransactionId = 1;
+	private Connection dbConn = null;
+	private PreparedStatement dbStmt = null;
+	private ResultSet queryResult = null;
+	
+	private long startTime = System.currentTimeMillis();
+	private long endTime   = System.currentTimeMillis();
+
+	/*
+	 * Initialize database connection here
+	 */
+	public DBReader(Dataset dataset, Algorithm algorithm)
+	{
+		super(dataset, algorithm);
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			dbConn = DriverManager.getConnection("jdbc:mysql://localhost:3306", "db_user", "db_user");
+			
+			dbStmt = dbConn.prepareStatement(getTxnReadQuery());
+		} catch (Exception e) {
+			System.err.println("Failed to initialise db connection. Reason : " + e);
+		}
+		
+		startTime = System.currentTimeMillis();
+	}
+
+	@Override
+	protected void finalize() throws Throwable 
+	{
+		// Close this connection
+		dbConn.close();
+	};
+	
+	@Override
+	public Transaction getNextTransaction() {
+
+		List<Integer> items = Lists.newArrayList();
+		try {
+			dbStmt.setInt(1, currTransactionId);
+			queryResult = dbStmt.executeQuery();
+			while(queryResult.next()) {
+				Integer item = queryResult.getInt("itemID");
+				items.add(item);
+			}
+		} catch (SQLException e) {
+			System.err.println("Failed to create db statement. Reason : " + e);
+			System.exit(1);
+		}
+
+		Transaction txn = new Transaction(currTransactionId, currTransactionId, items);
+		++currTransactionId;		
+
+		return txn;
+	}
+
+	@Override
+	public boolean hasNextTransaction() {
+		boolean hasMoreTransactions = (currTransactionId <= getDataset().getNumTxns());
+		if(!hasMoreTransactions) {
+			endTime = System.currentTimeMillis();
+			try {
+				dbConn.close();
+			} catch (SQLException e) {
+				System.err.println("Failed to close the db connection ..");
+			}
+		}
+
+		return hasMoreTransactions;
+	}
+
+	@Override
+	public int getDatasetReadTime() {
+		return (int)(endTime - startTime)/1000;
+	}
+	
+	/*
+	 * Creates the SQL query fired for fetching the current transaction id.
+	 */
+	private String getTxnReadQuery()
+	{
+		String tableName = getDataset().getDatasetDBTable();
+		String query = " SELECT tid, cid, itemID FROM " + tableName + " WHERE tid = ?";
+		
+		return query;
+	}
 }
