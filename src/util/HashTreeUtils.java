@@ -1,5 +1,6 @@
 package util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,19 @@ public class HashTreeUtils
 		}
 		
 		return hashTreeRoot;
+	}
+	
+	public static HashTreeNode buildHashTree(ItemSet[] candidateItemsets, int itemsetSize)
+	{
+		List<ItemSet> listItemset = new ArrayList<ItemSet>();
+		for(ItemSet itemset : candidateItemsets)
+		{
+			if(itemset == null)
+				break;
+			listItemset.add(itemset);
+		}
+		
+		return buildHashTree(listItemset, itemsetSize);
 	}
 	
 	/*

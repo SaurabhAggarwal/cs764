@@ -7,7 +7,7 @@ public enum Algorithm
 {
 	APRIORI,
 	APRIORI_TID,
-	//APRIORI_HYBRID,
+	APRIORI_HYBRID,
 	AIS//,
 	//SETM
 }

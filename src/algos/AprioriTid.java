@@ -23,13 +23,20 @@ import util.InputReader;
 
 import com.google.common.collect.Lists;
 
+/**
+ * Implements the AprioriTid Algorithm for frequent itemset mining.
+ * 
+ * @author saurabh
+ *
+ */
+
 public class AprioriTid {
 	
 	private static int MAX_K;
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.REF_TESTDATA, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.REF_TESTDATA, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT, new FileReader(Dataset.T20_I6_D100K, Algorithm.APRIORI_TID));
 	}
 	
 	/* 
@@ -42,7 +49,7 @@ public class AprioriTid {
 		
 		for(ItemSetBar itemsetbar : C_k_1_bar.getItemsetbars())	//1 transaction
 		{
-			//System.out.println("In transaction: " + itemsetbar.getTid());
+			System.out.println("In transaction: " + itemsetbar.getTid());
 			ItemSetBar k_itemset_bar = new ItemSetBar();
 			k_itemset_bar.setTid(itemsetbar.getTid());
 			
@@ -112,21 +119,24 @@ public class AprioriTid {
 		getInitialCandidateItemsets(transactions, candidateItemsets[1], candidateItemsetBars[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		//printAll(candidateItemsets[1].getItemsets());
-		System.out.println("\nk = " + 1);
+		//System.out.println("\nk = " + 1);
 		print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
-			System.out.println("\nk = " + k);
+			//System.out.println("\nk = " + k);
+			System.out.println("1");
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			System.out.println("2");
 			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
+			System.out.println("3");
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 			print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + "seconds.");
+		System.out.println("Time taken = " + timeTaken + " seconds.");
 		System.out.println("The End !");
 		
 		return timeTaken;
