@@ -1,7 +1,6 @@
 package algos;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +8,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import com.google.common.collect.Lists;
 
 import model.Algorithm;
 import model.Dataset;
@@ -26,13 +23,130 @@ import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
 
+import com.google.common.collect.Lists;
+
+import com.javamex.classmexer.MemoryUtil;
+
+/**
+ * Implements the AprioriHybrid Algorithm for frequent itemset mining.
+ * 
+ * @author saurabh
+ *
+ */
 public class AprioriHybrid {
-	
+
 	private static int MAX_K;
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT, new FileReader(Dataset.T5_I2_D100K, Algorithm.APRIORI_TID));
+		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
+	}
+	
+	private static long getFreeMemory()
+	{
+		return Runtime.getRuntime().freeMemory();
+	}
+	
+	private static long getEstimateSizeCBar(long numTransactions, CandidateItemset candidateItemsets)
+	{
+		long memoryUsage = numTransactions;
+		
+		int sumSupport = 0;
+		
+		for(ItemSet itemset : candidateItemsets.getItemsets())
+		{
+			if(itemset == null)
+				break;
+			sumSupport += itemset.getSupportCount();
+		}
+		
+		if(sumSupport > 0)
+			memoryUsage += (sumSupport * MemoryUtil.deepMemoryUsageOf(candidateItemsets.getItemsets()[0]));
+		
+		return memoryUsage;
+	}
+
+	/*
+	 * Run Apriori algorithm for the specified experiment parameters.
+	 * 
+	 * @param dataset - Dataset on which the experiment has to be run.
+	 * @param minSup  - Minimum support desired for this experiment run.
+	 * 
+	 * @return Time taken to complete this experiment.
+	 */
+	public static int runExperiment(Dataset dataset, MinSup minSup)
+	{
+		long expStartTime = System.currentTimeMillis();
+		
+		MAX_K = 400 * dataset.getAvgTxnSize();
+		
+		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
+		
+		InputReader reader = getDatasetReader(dataset);
+		
+		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
+		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
+		CandidateItemsetBar[] candidateItemsetBars = new CandidateItemsetBar[MAX_K];
+		
+		candidateItemsets[1] = new CandidateItemset(MAX_K);
+		candidateItemsetBars[1] = new CandidateItemsetBar();
+		largeItemsets[1] = new LargeItemset();
+		
+		getInitialCandidateItemsets(reader, candidateItemsets[1]);
+		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
+		
+		print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		
+		boolean switch_to_aprioritid = false;
+		boolean in_transition = false;
+		
+		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
+		{
+			candidateItemsets[k] = new CandidateItemset(MAX_K);
+			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			
+			long estimateSizeCBar = getEstimateSizeCBar(dataset.getNumTxns(), candidateItemsets[k]);
+			long freeMemory = getFreeMemory();
+			
+			if(switch_to_aprioritid)
+			{
+				if(in_transition)
+					in_transition = false;
+			}
+			else if(estimateSizeCBar < freeMemory)
+			{
+				//if(k == 2)
+				//{
+					switch_to_aprioritid = true;
+					in_transition = true;
+				//	System.out.println("Switching to AprioriTID.");
+				//}
+			}
+			
+			if(!switch_to_aprioritid) //Do Apriori
+			{
+				largeItemsets[k] = generateLargeItemsets_Apriori(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
+			}
+			else if(in_transition) //Make a switch
+			{
+				candidateItemsetBars[k] = generate_C_bar_transient(getDatasetReader(dataset), candidateItemsets[k], k);
+				largeItemsets[k] = generateLargeItemsets_AprioriTID(candidateItemsets[k], minSupportCount);
+			}
+			else //Do AprioriTID
+			{
+				candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
+				largeItemsets[k] = generateLargeItemsets_AprioriTID(candidateItemsets[k], minSupportCount);
+			}
+			print(largeItemsets[k], candidateItemsets[k].getItemsets());
+		}
+		
+		long expEndTime = System.currentTimeMillis();
+		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		
+		System.out.println("Time taken = " + timeTaken + " seconds.");
+		System.out.println("The End !");
+		
+		return timeTaken;
 	}
 	
 	/* 
@@ -52,7 +166,7 @@ public class AprioriHybrid {
 			SortedMap<Integer, Integer> kitemset_support = new TreeMap<Integer, Integer>();
 			for(Integer Ck_1_id : itemsetbar.getCandidateItemsetId())
 			{
-				//System.out.println("Itemset in transaction: " + allItemsets[Ck_1_id].getItems());
+				System.out.println("Itemset in transaction: " + allItemsets[Ck_1_id].getItems());
 				for(Integer Ck_id : allItemsets[Ck_1_id].getExtensions())
 				{
 					//System.out.print("Extension = " + C_k.getItemsets()[Ck_id] + "; ");
@@ -87,68 +201,33 @@ public class AprioriHybrid {
 		
 		return toReturn;
 	}
-
-	/*
-	 * Run AprioriTid algorithm for the specified experiment parameters
-	 */
-	private static int runExperiment(Dataset dataset, MinSup minSup, InputReader reader)
-	{
-		long expStartTime = System.currentTimeMillis();
-		
-		List<Transaction> transactions = new ArrayList<Transaction>();
-		
-		while(reader.hasNextTransaction()) {
-			transactions.add(reader.getNextTransaction());
-		}
-		
-		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
-		MAX_K = 400 * dataset.getAvgTxnSize();
-		//System.out.println(MAX_K);
-		
-		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
-		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
-		CandidateItemsetBar[] candidateItemsetBars = new CandidateItemsetBar[MAX_K];
-		
-		candidateItemsets[1] = new CandidateItemset(MAX_K);
-		candidateItemsetBars[1] = new CandidateItemsetBar();
-		largeItemsets[1] = new LargeItemset();
-		getInitialCandidateItemsets(transactions, candidateItemsets[1], candidateItemsetBars[1]);
-		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
-		//printAll(candidateItemsets[1].getItemsets());
-		System.out.println("\nk = " + 1);
-		print(largeItemsets[1], candidateItemsets[1].getItemsets());
-		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
-		{
-			System.out.println("\nk = " + k);
-			candidateItemsets[k] = new CandidateItemset(MAX_K);
-			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
-			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
-			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
-			print(largeItemsets[k], candidateItemsets[k].getItemsets());
-		}
-		
-		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + "seconds.");
-		System.out.println("The End !");
-		
-		return timeTaken;
-	}
 	
-	private static void printAll(ItemSet[] allItemsets)
+	private static CandidateItemsetBar generate_C_bar_transient(InputReader reader, CandidateItemset C_k, int currItemsetSize)
 	{
-		int index = 0;
-		for(ItemSet itemset : allItemsets)
+		//System.out.println("In generate_C_bar().");
+		CandidateItemsetBar toReturn = new CandidateItemsetBar();
+		
+		while(reader.hasNextTransaction())
 		{
-			if(itemset == null)
-				break;
-			System.out.print(index + ": ");
-			for(Integer j : itemset.getItems())
-				System.out.print(j + " ");
-			System.out.println("==> " + itemset.getSupportCount());
-			index++;
+			Transaction txn = reader.getNextTransaction();
+			ItemSetBar k_itemset_bar = new ItemSetBar();
+			k_itemset_bar.setTid(txn.getTid());
+			
+			HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(C_k.getItemsets(), currItemsetSize);
+			
+			List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+			for(ItemSet c : candidateSetsInTrans) {
+				c.setSupportCount(c.getSupportCount() + 1);
+				k_itemset_bar.getCandidateItemsetId().add(c.getIndex());
+			}
+			
+			if(k_itemset_bar.getCandidateItemsetId().size() > 0)
+				toReturn.getItemsetbars().add(k_itemset_bar);
 		}
+		
+		return toReturn;
 	}
+
 	
 	private static void print(LargeItemset l, ItemSet[] allItemsets)
 	{
@@ -160,7 +239,35 @@ public class AprioriHybrid {
 		}
 	}
 	
-	private static LargeItemset generateLargeItemsets(CandidateItemset candidateItemset, int minSupportCount) {
+	private static LargeItemset generateLargeItemsets_Apriori(InputReader reader, CandidateItemset candidateItemset, int minSupportCount, int currItemsetSize) {
+		
+		//System.out.println("In generateLargeItemsets().");
+		
+		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemset.getItemsets(), currItemsetSize);
+		
+		while(reader.hasNextTransaction()) {
+			Transaction txn = reader.getNextTransaction();
+			List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+			for(ItemSet c : candidateSetsInTrans) {
+				c.setSupportCount(c.getSupportCount() + 1);
+			}
+		}
+		
+		LargeItemset largeItemset = new LargeItemset();
+		int index = 0;
+		for(ItemSet itemset : candidateItemset.getItemsets())
+		{
+			if(itemset == null)
+				break;
+			if(itemset.getSupportCount() >= minSupportCount)
+				largeItemset.getItemsetIds().add(index);
+			index++;
+		}
+		
+		return largeItemset;
+	}
+	
+	private static LargeItemset generateLargeItemsets_AprioriTID(CandidateItemset candidateItemset, int minSupportCount) {
 		
 		//System.out.println("In generateLargeItemsets().");
 		
@@ -177,14 +284,16 @@ public class AprioriHybrid {
 		
 		return largeItemset;
 	}
-
-	private static void getInitialCandidateItemsets(List<Transaction> transactions, CandidateItemset C, CandidateItemsetBar C_) {
+	
+	private static void getInitialCandidateItemsets(InputReader reader, CandidateItemset C) {
 		//System.out.println("In getInitialCandidateItemsets().");
 		SortedMap<Integer, Integer> itemset_support = new TreeMap<Integer, Integer>();
 		
 		//This loop counts support.
-		for(Transaction t : transactions)
+		while(reader.hasNextTransaction())
 		{
+			Transaction t = reader.getNextTransaction();
+		
 			for(Integer i : t.getItems())
 			{
 				if(itemset_support.containsKey(i))
@@ -213,19 +322,6 @@ public class AprioriHybrid {
 			itemset_pos.put(item, index);
 			index++;
 		}
-		
-		//This part creates C_.
-		for(Transaction t : transactions)
-		{
-			ItemSetBar itemsetbar = new ItemSetBar();
-			itemsetbar.setTid(t.getTid());
-			for(Integer i : t.getItems())
-			{
-				int pos = itemset_pos.get(i);
-				itemsetbar.getCandidateItemsetId().add(pos);
-			}
-			C_.getItemsetbars().add(itemsetbar);
-		}
 	}
 
 	private static void getInitialLargeItemsets(CandidateItemset C, int minSupportCount, LargeItemset L)
@@ -238,32 +334,6 @@ public class AprioriHybrid {
 				L.getItemsetIds().add(index);
 			index++;
 		}
-	}
-	
-	private static boolean prune(ItemSet[] allItemsets, List<Integer> largeItemsets, ItemSet query)
-	{
-		/*
-		 * Prune the generated candidate itemsets by removing all such candidate itemsets whose any (K-1) subset
-		 * does not belong to the list of (K-1) large itemsets.
-		 */
-		List<ItemSet> subsets = getSubsets(query);
-			
-		for(ItemSet s : subsets)
-		{
-			boolean contains = false;
-			for(Integer index : largeItemsets)
-			{
-				ItemSet itemset = allItemsets[index];
-				if(itemset.equals(s))
-				{
-					contains = true;
-					break;
-				}
-			}
-			if(!contains)
-				return false;
-		}
-		return true;
 	}
 	
 	//Given L[k-1], returns C[k]
@@ -304,6 +374,7 @@ public class AprioriHybrid {
 						
 						if(prune(allItemsets, largeItemSets, newitemset))
 						{
+							newitemset.setIndex(new_cand_index);
 							candidateItemSets.add(newitemset);
 							allItemsets[largeItemSetsArray[i]].addExtension(new_cand_index);
 							allItemsets[largeItemSetsArray[j]].addExtension(new_cand_index);
@@ -319,6 +390,7 @@ public class AprioriHybrid {
 						items.add(innerItems.get(0));
 						
 						ItemSet newitemset = new ItemSet(items, 0, largeItemSetsArray[i], largeItemSetsArray[j]);
+						newitemset.setIndex(new_cand_index);
 						
 						candidateItemSets.add(newitemset);
 						allItemsets[largeItemSetsArray[i]].addExtension(new_cand_index);
@@ -330,6 +402,32 @@ public class AprioriHybrid {
 		}
 		
 		return candidateItemSets;
+	}
+
+	private static boolean prune(ItemSet[] allItemsets, List<Integer> largeItemsets, ItemSet query)
+	{
+		/*
+		 * Prune the generated candidate itemsets by removing all such candidate itemsets whose any (K-1) subset
+		 * does not belong to the list of (K-1) large itemsets.
+		 */
+		List<ItemSet> subsets = getSubsets(query);
+			
+		for(ItemSet s : subsets)
+		{
+			boolean contains = false;
+			for(Integer index : largeItemsets)
+			{
+				ItemSet itemset = allItemsets[index];
+				if(itemset.equals(s))
+				{
+					contains = true;
+					break;
+				}
+			}
+			if(!contains)
+				return false;
+		}
+		return true;
 	}
 	
 	/*
@@ -349,94 +447,12 @@ public class AprioriHybrid {
 		return subsets;
 	}
 	
-	
-	
-	
-	
-	
-	/******************************************************************
-	 * APRIORI PART *
-	 *****************************************************************/
-	
 	/*
-	 * Find which all candidate sets occur in the transaction using hash tree.
+	 * Gets a iterative reader to the dataset and algorithm corresponding to the current experiment.
 	 */
-	public static List<ItemSet> subsetEfficient(List<ItemSet> candidateItemsets, Transaction txn, Integer itemsetSize)
+	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemsets, itemsetSize);
-		return HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+		return new FileReader(dataset, Algorithm.APRIORI);
 	}
 
-	/*
-	 * Generates candidate itemsets for next iteration based on the large itemsets of the previous iteration
-	 */
-	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
-	{
-		// Large itemsets of size=1 have already been sorted by the usage of LinkedHashMap
-		// while generating the initial large datatsets. Since sorting time is considerable,
-		// this hack is worth it to save the time for sorting of 1-large itemsets.
-		if(itemSetSize > 1) {
-			Collections.sort(largeItemSets);			
-		}
-		
-		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
-		// that except their last items match. Include all the matching items + the last item of 
-		// both the itemsets to generate a new candidate itemset. 
-		List<ItemSet> candidateItemSets = Lists.newArrayList();
-		List<Integer> items = null;
-		for(int i=0; i < (largeItemSets.size() -1); i++) {
-			for(int j=i+1; j < largeItemSets.size(); j++ ) {
-				List<Integer> outerItems = largeItemSets.get(i).getItems();
-				List<Integer> innerItems = largeItemSets.get(j).getItems();
-		
-				if((itemSetSize -1) > 0) {
-					boolean isMatch = true;
-					for(int k=0; k < (itemSetSize -1); k++) {
-						if(!outerItems.get(k).equals(innerItems.get(k))) {
-							isMatch = false;
-							break;
-						}
-					}
-					if(isMatch) {
-						items = Lists.newArrayList();
-						items.addAll(outerItems);
-						items.add(innerItems.get(itemSetSize-1));
-						
-						candidateItemSets.add(new ItemSet(items, 0));
-					}
-				}
-				// Handle the base case for generation of candidate itemsets for k-1 = 1.
-				else {
-					if(outerItems.get(0) < innerItems.get(0)) {
-						items = Lists.newArrayList();
-						items.add(outerItems.get(0));
-						items.add(innerItems.get(0));
-						
-						candidateItemSets.add(new ItemSet(items, 0));
-					}
-				}
-			}
-		}
-		
-		// Prune the generated candidate itemsets by removing all such candidate itemsets whose 
-		// any (K-1) subset does not belong to the list of (K-1) large itemsets.
-		List<ItemSet> finalCandidateItemSets = Lists.newArrayList();
-		for(ItemSet c : candidateItemSets) {
-			List<ItemSet> subsets = getSubsets(c);
-			
-			boolean isValidCandidate = true;
-			for(ItemSet s : subsets) {
-				if(!largeItemSets.contains(s)) {
-					isValidCandidate = false;
-					break;
-				}
-			}
-			
-			if(isValidCandidate) {
-				finalCandidateItemSets.add(c);
-			}
-		}
-
-		return finalCandidateItemSets;
-	}
 }

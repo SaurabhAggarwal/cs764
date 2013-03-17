@@ -16,6 +16,8 @@ import com.google.common.base.Objects;
  */
 public class ItemSet implements Comparable<ItemSet> 
 {
+	private int index;
+	
 	private List<Integer> items;
 	private int supportCount;
 	
@@ -69,7 +71,17 @@ public class ItemSet implements Comparable<ItemSet>
 
 		return Objects.equal(this.items, other.items);
 	}
-
+	
+	public int getIndex()
+	{
+		return this.index;
+	}
+	
+	public void setIndex(int index)
+	{
+		this.index = index;
+	}
+	
 	public List<Integer> getItems() {
 		return items;
 	}
