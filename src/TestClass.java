@@ -16,9 +16,9 @@ import util.InputReader;
 public class TestClass 
 {
 	public static void main(String[] args) {
-		//testFileReader();
+		testFileReader();
 		testAlgosOnRefDataSet();
-		//testDbReader();
+		testDbReader();
 	}
 	
 	/*

@@ -1,5 +1,7 @@
 package model;
 
+import util.Constants;
+
 /**
  * Represents the various datasets for which the frequent itemset mining algorithms have to be tested.
  * The general naming of the dataset is T<?>_I<?>_D<?>K
@@ -63,6 +65,6 @@ public enum Dataset {
 	}
 
 	public String getDatasetDBTable() {
-		return "mining_datasets." + datasetDBTable;
+		return Constants.DB_NAME + "." + datasetDBTable;
 	}
 }

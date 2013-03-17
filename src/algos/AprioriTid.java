@@ -132,21 +132,6 @@ public class AprioriTid {
 		return timeTaken;
 	}
 	
-	private static void printAll(ItemSet[] allItemsets)
-	{
-		int index = 0;
-		for(ItemSet itemset : allItemsets)
-		{
-			if(itemset == null)
-				break;
-			System.out.print(index + ": ");
-			for(Integer j : itemset.getItems())
-				System.out.print(j + " ");
-			System.out.println("==> " + itemset.getSupportCount());
-			index++;
-		}
-	}
-	
 	private static void print(LargeItemset l, ItemSet[] allItemsets)
 	{
 		for(Integer i : l.getItemsetIds())

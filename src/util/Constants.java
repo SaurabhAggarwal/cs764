@@ -9,4 +9,5 @@ package util;
 public class Constants 
 {
 	public static int NUMBER_OF_ITEMS = 1000;
+	public static String DB_NAME = "mining_datasets";
 }

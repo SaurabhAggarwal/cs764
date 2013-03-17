@@ -5,14 +5,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import model.Algorithm;
 import model.Dataset;
 import model.Transaction;
+
+import com.google.common.collect.Lists;
 
 
 /**

@@ -161,16 +161,6 @@ public class AIS {
 		return largeItemSetsMap;
 	}
 	
-	private static void print(List<ItemSet> largeItemsets) {
-		// TODO Auto-generated method stub
-		for(ItemSet itemset : largeItemsets)
-		{
-			for(Integer i : itemset.getItems())
-				System.out.print(i + " ");
-			System.out.println("- " + itemset.getSupportCount());
-		}
-	}
-
 	/* Returns set of 1-extension itemsets corresponding the input large itemset and
 	 * a transaction.
 	 * 
