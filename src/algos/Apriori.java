@@ -21,6 +21,7 @@ import model.aprioritid.CandidateItemset;
 import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.LargeItemset;
 import util.FileReader;
+import util.DBReader;
 import util.HashTreeUtils;
 import util.InputReader;
 
@@ -38,7 +39,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 
@@ -293,6 +294,6 @@ public class Apriori {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new FileReader(dataset, Algorithm.APRIORI);
+		return new DBReader(dataset, Algorithm.APRIORI);
 	}
 }

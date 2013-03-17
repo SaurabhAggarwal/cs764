@@ -3,6 +3,7 @@ import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
 import model.Transaction;
+import util.DBReader;
 import util.FileReader;
 import util.InputReader;
 
@@ -15,8 +16,9 @@ import util.InputReader;
 public class TestClass 
 {
 	public static void main(String[] args) {
-		testFileReader();
+		//testFileReader();
 		testAlgosOnRefDataSet();
+		//testDbReader();
 	}
 	
 	/*
@@ -33,7 +35,18 @@ public class TestClass
 		int count = 0;
 		while(reader.hasNextTransaction()) {
 			Transaction txn = reader.getNextTransaction();
-			System.out.println( txn.toString());
+			++count;
+		}
+		
+		System.out.println("##Transactions : " + count);
+	}
+	
+	private static void testDbReader()
+	{
+		DBReader reader = new DBReader(Dataset.T5_I2_D100K, Algorithm.APRIORI);
+		int count = 0;
+		while(reader.hasNextTransaction()) {
+			Transaction txn = reader.getNextTransaction();
 			++count;
 		}
 		

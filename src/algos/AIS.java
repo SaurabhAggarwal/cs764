@@ -9,7 +9,7 @@ import model.Dataset;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
-import util.FileReader;
+import util.DBReader;
 import util.InputReader;
 import util.MiningUtils;
 
@@ -25,13 +25,6 @@ import com.google.common.collect.Maps;
  *
  */
 public class AIS {
-
-	
-	public static void main(String[] args)
-	{
-		runExperiment(Dataset.REF_TESTDATA, MinSup.POINT_TWO_FIVE_PERCENT);
-	}
-	
 	/*
 	 * Run AIS algorithm for the specified experiment parameters
 	 * 
@@ -87,7 +80,6 @@ public class AIS {
 		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 	
 		while(!largeItemsets.isEmpty()) {
-			print(largeItemsets);
 			int numLargeItemsLastPass = largeItemsets.size();
 			++currItemsetSize; // Pass number = Size of large items in this pass
 			
@@ -219,6 +211,6 @@ public class AIS {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new FileReader(dataset, Algorithm.AIS);
+		return new DBReader(dataset, Algorithm.AIS);
 	}
 }
