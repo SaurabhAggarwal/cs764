@@ -1,6 +1,5 @@
 package algos;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,19 +9,18 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import model.Algorithm;
+import model.CandidateItemset;
 import model.Dataset;
 import model.HashTreeNode;
 import model.ItemSet;
+import model.LargeItemset;
 import model.MinSup;
 import model.Transaction;
-import model.aprioritid.CandidateItemset;
 import model.aprioritid.CandidateItemsetBar;
-import model.aprioritid.LargeItemset;
+import util.AprioriUtils;
 import util.DBReader;
 import util.HashTreeUtils;
 import util.InputReader;
-
-import com.google.common.collect.Lists;
 
 /**
  * Implements the classical Apriori Algorithm for frequent itemset mining.
@@ -69,16 +67,16 @@ public class Apriori {
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
-		print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
-			candidateItemsets[k].setItemsets(apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
 			
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 			
-			print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
@@ -86,16 +84,6 @@ public class Apriori {
 		System.out.println("Time taken = " + timeTaken + " seconds.");
 		
 		return timeTaken;
-	}
-	
-	private static void print(LargeItemset l, ItemSet[] allItemsets)
-	{
-		for(Integer i : l.getItemsetIds())
-		{
-			for(Integer j : allItemsets[i].getItems())
-				System.out.print(j + " ");
-			System.out.println("- " + allItemsets[i].getSupportCount());
-		}
 	}
 	
 	private static LargeItemset generateLargeItemsets(InputReader reader, CandidateItemset candidateItemset, int minSupportCount, int currItemsetSize) {
@@ -175,115 +163,6 @@ public class Apriori {
 				L.getItemsetIds().add(index);
 			index++;
 		}
-	}
-	
-	//Given L[k-1], returns C[k]
-	public static List<ItemSet> apriori_gen(ItemSet[] allItemsets, List<Integer> largeItemSets, int itemSetSize)
-	{
-		//System.out.println("In apriori_gen " + itemSetSize);
-		//Collections.sort(largeItemSets);
-		
-		/*
-		 * Generate the candidate itemsets by joining the two itemsets in the large itemsets such that except their
-		 * last items match. Include all the matching items + the last item of both the itemsets to generate a new
-		 * candidate itemset. 
-		 */
-		List<ItemSet> candidateItemSets = Lists.newArrayList();
-		List<Integer> items = null;
-		int new_cand_index = 0;
-		Integer[] largeItemSetsArray = largeItemSets.toArray(new Integer[largeItemSets.size()]);
-		for(int i = 0; i < largeItemSetsArray.length; i++)
-		{
-			for(int j = i + 1; j < largeItemSetsArray.length; j++) {
-				List<Integer> outerItems = allItemsets[largeItemSetsArray[i]].getItems();
-				List<Integer> innerItems = allItemsets[largeItemSetsArray[j]].getItems();
-		
-				if((itemSetSize -1) > 0) {
-					boolean isMatch = true;
-					for(int k=0; k < (itemSetSize -1); k++) {
-						if(!outerItems.get(k).equals(innerItems.get(k))) {
-							isMatch = false;
-							break;
-						}
-					}
-					if(isMatch) {
-						items = Lists.newArrayList();
-						items.addAll(outerItems);
-						items.add(innerItems.get(itemSetSize-1));
-						
-						ItemSet newitemset = new ItemSet(items, 0, largeItemSetsArray[i], largeItemSetsArray[j]);
-						
-						if(prune(allItemsets, largeItemSets, newitemset))
-						{
-							candidateItemSets.add(newitemset);
-							allItemsets[largeItemSetsArray[i]].addExtension(new_cand_index);
-							allItemsets[largeItemSetsArray[j]].addExtension(new_cand_index);
-							new_cand_index++;
-						}
-					}
-				}
-				// Handle the base case for generation of candidate itemsets for k-1 = 1.
-				else {
-					if(outerItems.get(0) < innerItems.get(0)) {
-						items = Lists.newArrayList();
-						items.add(outerItems.get(0));
-						items.add(innerItems.get(0));
-						
-						ItemSet newitemset = new ItemSet(items, 0, largeItemSetsArray[i], largeItemSetsArray[j]);
-						
-						candidateItemSets.add(newitemset);
-						allItemsets[largeItemSetsArray[i]].addExtension(new_cand_index);
-						allItemsets[largeItemSetsArray[j]].addExtension(new_cand_index);
-						new_cand_index++;
-					}
-				}
-			}
-		}
-		
-		return candidateItemSets;
-	}
-
-	private static boolean prune(ItemSet[] allItemsets, List<Integer> largeItemsets, ItemSet query)
-	{
-		/*
-		 * Prune the generated candidate itemsets by removing all such candidate itemsets whose any (K-1) subset
-		 * does not belong to the list of (K-1) large itemsets.
-		 */
-		List<ItemSet> subsets = getSubsets(query);
-			
-		for(ItemSet s : subsets)
-		{
-			boolean contains = false;
-			for(Integer index : largeItemsets)
-			{
-				ItemSet itemset = allItemsets[index];
-				if(itemset.equals(s))
-				{
-					contains = true;
-					break;
-				}
-			}
-			if(!contains)
-				return false;
-		}
-		return true;
-	}
-	
-	/*
-	 * Generate all possible increasing k-1 subsets for this itemset
-	 */
-	private static List<ItemSet> getSubsets(ItemSet itemset)
-	{
-		List<ItemSet> subsets = new ArrayList<ItemSet>();
-		
-		List<Integer> items = itemset.getItems();
-		for(int i = 0; i < items.size(); i++) {
-			List<Integer> currItems = new ArrayList<Integer>(items);
-			currItems.remove(items.size() - 1 - i);
-			subsets.add(new ItemSet(currItems, 0));
-		}
-
-		return subsets;
 	}
 	
 	/*
