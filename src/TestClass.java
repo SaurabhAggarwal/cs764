@@ -16,9 +16,9 @@ import util.InputReader;
 public class TestClass 
 {
 	public static void main(String[] args) {
-		testFileReader();
+		//testFileReader();
 		testAlgosOnRefDataSet();
-		testDbReader();
+		//testDbReader();
 	}
 	
 	/*
@@ -26,7 +26,7 @@ public class TestClass
 	 */
 	private static void testAlgosOnRefDataSet()
 	{
-		Apriori.runExperiment(Dataset.REF_TESTDATA, MinSup.REF_TESTDATA_MINSUP);
+		Apriori.runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 	
 	private static void testFileReader()

@@ -1,8 +1,6 @@
 package algos;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +18,6 @@ import model.Transaction;
 import model.aprioritid.CandidateItemset;
 import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.LargeItemset;
-import util.FileReader;
 import util.DBReader;
 import util.HashTreeUtils;
 import util.InputReader;

@@ -90,6 +90,10 @@ public class GraphUtils{
             false                     // urls
         );
 
+        // We want values of higher minimum support percentages to be shown first, in
+        // accordance with the graphs in the paper.
+        chart.getXYPlot().getDomainAxis().setInverted(true);
+
         return chart;
 	}
 }
