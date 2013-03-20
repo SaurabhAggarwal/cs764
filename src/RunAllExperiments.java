@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 
 import algos.AIS;
 import algos.Apriori;
+import algos.AprioriHybrid;
 import algos.AprioriTid;
 import model.Algorithm;
 import model.Dataset;
@@ -40,7 +41,7 @@ public class RunAllExperiments {
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_TID, minSup, experimentRunTime);
 				
 				// AprioriHybrid
-				experimentRunTime = AprioriTid.runExperiment(dataset, minSup);
+				experimentRunTime = AprioriHybrid.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
 				
 				// AIS
