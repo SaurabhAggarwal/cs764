@@ -27,9 +27,9 @@ public class RunAllExperiments {
 			algoRunTimeMap = Maps.newTreeMap();
 			for(MinSup minSup : MinSup.values()) {
 				// This is just for testing. Ignore it during actual chart generation.
-				if(minSup.equals(MinSup.REF_TESTDATA_MINSUP)) {
-					continue;
-				}
+				//if(minSup.equals(MinSup.REF_TESTDATA_MINSUP)) {
+					//continue;
+				//}
 
 				// Apriori
 				experimentRunTime = Apriori.runExperiment(dataset, minSup);

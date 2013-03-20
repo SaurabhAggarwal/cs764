@@ -24,6 +24,11 @@ import com.google.common.collect.Maps;
  */
 public class SETM {
 
+	public static void main(String[] args)
+	{
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
+	}
+
 	/*
 	 * Run SETM algorithm for the specified experiment parameters
 	 * 
