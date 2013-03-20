@@ -36,14 +36,16 @@ public class GraphUtils{
 	 */
 	public static void drawGraph(Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap, Dataset dataset)
 	{
+		String chartTitle = dataset.toString();
+		chartTitle = chartTitle.replace("_", ".");
 		XYDataset graphDataset = createGraphDataset(algoRunTimeMap, dataset);
-		JFreeChart chart = createChart(graphDataset, dataset.toString());
+		JFreeChart chart = createChart(graphDataset, chartTitle);
 		
 		try {
-			String fileLoc = new File(".").getCanonicalPath() + "/graphs/" + dataset.toString();
+			String fileLoc = new File(".").getCanonicalPath() + "/graphs/" + dataset.toString() + ".png";
 			System.out.println("Adding chart for dataset : " + dataset.toString() + " at " + fileLoc);
 			File chartFile = new File(fileLoc);
-			ChartUtilities.saveChartAsPNG(chartFile, chart, 570, 700);
+			ChartUtilities.saveChartAsPNG(chartFile, chart, 870, 700);
 		} catch (IOException e) {
 			System.out.println(
 				"Chart creation failed for dataset : " + dataset.toString() + ". Reason : " + e 

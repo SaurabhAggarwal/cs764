@@ -1,11 +1,12 @@
 package model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
 
 /**
  * Represents itemsets i.e. a group of items that are bought together in a transaction, along
@@ -28,10 +29,11 @@ public class ItemSet implements Comparable<ItemSet>
 		super();
 		setItems(items);
 		this.supportCount = supportCount;
+		
+		// TODO : Isn't this required only for AprioriTID & AprioriHybrid ? Can we just extend this
+		// class to AprioriItemset and make all these changes there ?
 		this.generators = new int[2];
 		this.extensions = new ArrayList<Integer>();
-		
-		Collections.sort(this.items);
 	}
 	
 	public ItemSet()
@@ -47,7 +49,14 @@ public class ItemSet implements Comparable<ItemSet>
 
 	@Override
 	public String toString() {
-		return "ItemSet [items=" + Arrays.toString(items.toArray()) + ", supportCount=" + supportCount + "]";
+		StringBuilder objStr = new StringBuilder();
+		for(Integer item : items) {
+			objStr.append(item).append(" ");
+		}
+		objStr.append("-");
+		objStr.append(" ").append(supportCount);
+
+		return objStr.toString();
 	}
 
 	// Two itemsets are equal if they have the same set of items.
@@ -58,17 +67,7 @@ public class ItemSet implements Comparable<ItemSet>
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-
 		ItemSet other = (ItemSet) obj;
-		Collections.sort(this.items);
-		Collections.sort(other.items);
-
 		return Objects.equal(this.items, other.items);
 	}
 	
@@ -111,22 +110,9 @@ public class ItemSet implements Comparable<ItemSet>
 
 	@Override
 	public int compareTo(ItemSet that) {
-		List<Integer> thisItems = this.getItems();
-		List<Integer> thatItems = that.getItems();
-		if(thisItems == thatItems) {
-			return 0;
-		}
-		
-		// Compare individual items in the list. At the first mismatch based on the difference in the two sets,
-		// we can determine which list is supposed to lexically appear first.
-		for(int i=0; i < thisItems.size(); i++) {
-			int diff = thisItems.get(i).compareTo(thatItems.get(i));
-			if(diff != 0) {
-				return diff;
-			}
-		}
-
-		return 0;
+		return ComparisonChain.start().
+				compare(this.items, that.items, Ordering.<Integer>natural().lexicographical()).
+				result();
 	}
 	
 	public void incrementSupportCount()

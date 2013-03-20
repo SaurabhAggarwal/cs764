@@ -1,4 +1,3 @@
-import algos.Apriori;
 import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
@@ -6,6 +5,7 @@ import model.Transaction;
 import util.DBReader;
 import util.FileReader;
 import util.InputReader;
+import algos.Apriori;
 
 /**
  * Class for ad-hoc tests.
@@ -17,7 +17,7 @@ public class TestClass
 {
 	public static void main(String[] args) {
 		//testFileReader();
-		testAlgosOnRefDataSet();
+		//testAlgosOnRefDataSet();
 		//testDbReader();
 	}
 	

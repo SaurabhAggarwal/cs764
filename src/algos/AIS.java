@@ -1,6 +1,6 @@
 package algos;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +12,7 @@ import model.Transaction;
 import util.DBReader;
 import util.InputReader;
 import util.MiningUtils;
+import util.OutputUtils;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -25,6 +26,12 @@ import com.google.common.collect.Maps;
  *
  */
 public class AIS {
+
+	public static void main(String[] args)
+	{
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
+	}
+
 	/*
 	 * Run AIS algorithm for the specified experiment parameters
 	 * 
@@ -38,25 +45,31 @@ public class AIS {
 		long expStartTime = System.currentTimeMillis();
 		
 		long largeItemSetGenStart = System.currentTimeMillis();
-		Map<Integer, List<ItemSet>> largeItemSetsMap = getLargeItemSetsMap(dataset, minSup);
+		Map<Integer, Integer> candidateCountMap = Maps.newTreeMap();
+		Map<Integer, List<ItemSet>> largeItemSetsMap = 
+				getLargeItemSetsMap(dataset, minSup, candidateCountMap);
 		long largeItemSetGenEnd = System.currentTimeMillis();
 		
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
 			if(entry.getValue().isEmpty()) {
 				continue;
 			}
-
-			System.out.println("Itemsets for size " + entry.getKey() + " are : " + 
-								Arrays.toString(entry.getValue().toArray()));
 		}
 		
 		long expEndTime = System.currentTimeMillis();
 		System.out.println(
-				"Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
-				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
-				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
+				"Time taken for experiment " + Algorithm.AIS.toString() + "/" + dataset.toString() + 
+				" with support " + minSup.toString() + " % support is " + 
+				(expEndTime - expStartTime)/1000 + " s --> " + " {Large itemset generation : " + 
+				(largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
 		);
 		
+		try {
+			OutputUtils.writeOutputToFile(Algorithm.AIS, dataset, minSup, largeItemSetsMap);
+		} catch (IOException e) {
+			System.err.println("Failed to write output to file. Reason : " + e);
+		}
+
 		return (int)(expEndTime - expStartTime)/1000;
 	}
 
@@ -65,10 +78,13 @@ public class AIS {
 	 * 
 	 * @param dataset      - For which dataset, this experiment has to be run.
 	 * @param minSup       - Minimum desired support threshold
+	 * @param candidateCountMap - Map of pass number and the number of candidate sets generated in 
+	 * 						this pass.
 	 * 
 	 * @returns Map of large itemsets for each pass
 	 */
-	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(Dataset dataset, MinSup minSup)
+	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(
+			Dataset dataset, MinSup minSup, Map<Integer, Integer> candidateCountMap)
 	{
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
@@ -76,11 +92,10 @@ public class AIS {
 		List<ItemSet> largeItemsets = 
 				MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
 		int currItemsetSize = 1;
-		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
+		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newTreeMap();
 		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 	
 		while(!largeItemsets.isEmpty()) {
-			int numLargeItemsLastPass = largeItemsets.size();
 			++currItemsetSize; // Pass number = Size of large items in this pass
 			
 			/*
@@ -150,12 +165,7 @@ public class AIS {
 			}
 			
 			largeItemSetsMap.put(currItemsetSize, largeItemsets);
-			
-			System.out.println(
-				"Current pass#" + currItemsetSize + " --> Large itemsets last pass : " + numLargeItemsLastPass + 
-				" , Candidate sets generated : " + candidateKItemSetMap.values().size() + 
-				" , Large Itemset current pass : " + largeItemsets.size()
-			);
+			candidateCountMap.put(currItemsetSize, candidateKItemSetMap.values().size());
 		}
 		
 		return largeItemSetsMap;

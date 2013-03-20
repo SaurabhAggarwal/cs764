@@ -36,7 +36,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 
@@ -69,7 +69,7 @@ public class Apriori {
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
-		print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		//print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
@@ -78,7 +78,7 @@ public class Apriori {
 			
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 			
-			print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
