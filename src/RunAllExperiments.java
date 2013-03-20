@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 
 import algos.AIS;
 import algos.Apriori;
+import algos.AprioriTid;
 import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
@@ -33,7 +34,15 @@ public class RunAllExperiments {
 				// Apriori
 				experimentRunTime = Apriori.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI, minSup, experimentRunTime);
-
+				
+				// AprioriTID
+				experimentRunTime = AprioriTid.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_TID, minSup, experimentRunTime);
+				
+				// AprioriHybrid
+				experimentRunTime = AprioriTid.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
+				
 				// AIS
 				experimentRunTime = AIS.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
