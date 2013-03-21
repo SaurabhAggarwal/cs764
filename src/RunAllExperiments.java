@@ -4,8 +4,9 @@ import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
 import util.GraphUtils;
-import algos.AIS;
 import algos.Apriori;
+import algos.AprioriHybrid;
+import algos.AprioriTid;
 
 import com.google.common.collect.Maps;
 
@@ -30,22 +31,16 @@ public class RunAllExperiments {
 			algoRunTimeMap = Maps.newTreeMap();
 			for(MinSup minSup : MinSup.values()) {
 				// Apriori
-				experimentRunTime = 0;
-				for(int i=1; i <= NUM_RERUNS; i++) {
-					experimentRunTime += Apriori.runExperiment(dataset, minSup);					
-				}
-				insertIntoAlgoRunTimeMap(
-					algoRunTimeMap, Algorithm.APRIORI, minSup, (int)(experimentRunTime/NUM_RERUNS)
-				);
-
-				// AIS
-				experimentRunTime = 0;
-				for(int i=1; i <= NUM_RERUNS; i++) {
-					experimentRunTime += AIS.runExperiment(dataset, minSup);					
-				}
-				insertIntoAlgoRunTimeMap(
-					algoRunTimeMap, Algorithm.AIS, minSup, (int)(experimentRunTime/NUM_RERUNS)
-				);
+				experimentRunTime = Apriori.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI, minSup, experimentRunTime);
+				
+				// AprioriTID
+				experimentRunTime = AprioriTid.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_TID, minSup, experimentRunTime);
+				
+				// AprioriHybrid
+				experimentRunTime = AprioriHybrid.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
 				
 				// SETM
 				//experimentRunTime = SETM.runExperiment(dataset, minSup);

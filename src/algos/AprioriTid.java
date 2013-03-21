@@ -95,7 +95,7 @@ public class AprioriTid {
 	/*
 	 * Run AprioriTid algorithm for the specified experiment parameters
 	 */
-	private static int runExperiment(Dataset dataset, MinSup minSup)
+	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
 		long expStartTime = System.currentTimeMillis();
 		
