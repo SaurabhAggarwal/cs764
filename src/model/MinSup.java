@@ -8,7 +8,7 @@ package model;
  * @author shishir
  */
 public enum MinSup {
-	REF_TESTDATA_MINSUP(50),
+	//REF_TESTDATA_MINSUP(50),
 	TWO_PERCENT(2),
 	ONE_POINT_FIVE_PERCENT(1.5),
 	ONE_PERCENT(1),

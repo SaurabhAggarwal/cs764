@@ -28,17 +28,18 @@ public class OutputUtils {
 	{
 		StringBuilder opFileName = new StringBuilder();
 		opFileName.append(algo.toString()).append("_");
-		opFileName.append(dataset.toString().replace("_", ".")).append("_");
-		opFileName.append(minSup.getMinSupPercentage());
+		opFileName.append(dataset.toString().replace("_", "."));
 		
 		String fileLoc = new File(".").getCanonicalPath() + "/output/" + opFileName.toString() + ".txt";
 		System.out.println("#File : " + fileLoc);
 		File file = new File(fileLoc);
-		if(!file.exists()) {
-			file.createNewFile();
+		
+		// Since across various minimum supports also, the result of algorithm would be same for 
+		// the same dataset, just create a single file for algo-dataset combination.
+		if(file.exists()) {
+			return;
 		}
 
-		
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fileLoc)));
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
 			List<ItemSet> largeItemsetsCurrPass = entry.getValue();

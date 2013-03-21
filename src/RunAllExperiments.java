@@ -1,14 +1,13 @@
 import java.util.Map;
 
-import util.GraphUtils;
-
-import com.google.common.collect.Maps;
-
-import algos.AIS;
-import algos.Apriori;
 import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
+import util.GraphUtils;
+import algos.AIS;
+import algos.Apriori;
+
+import com.google.common.collect.Maps;
 
 /**
  * Run experiments on all the frequent itemset mining algorithms for various configurations.
@@ -19,24 +18,38 @@ import model.MinSup;
  */
 public class RunAllExperiments {
 
+	/*
+	 * Run each experiment 3 times and then take the average of these # of runs.
+	 */
+	private static final int NUM_RERUNS = 3;
+
 	public static void main(String[] args) {
 		int experimentRunTime = 0;
 		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = null;
 		for(Dataset dataset : Dataset.values()) {
 			algoRunTimeMap = Maps.newTreeMap();
 			for(MinSup minSup : MinSup.values()) {
-				// This is just for testing. Ignore it during actual chart generation.
-				//if(minSup.equals(MinSup.REF_TESTDATA_MINSUP)) {
-					//continue;
-				//}
-
 				// Apriori
-				experimentRunTime = Apriori.runExperiment(dataset, minSup);
-				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI, minSup, experimentRunTime);
+				experimentRunTime = 0;
+				for(int i=1; i <= NUM_RERUNS; i++) {
+					experimentRunTime += Apriori.runExperiment(dataset, minSup);					
+				}
+				insertIntoAlgoRunTimeMap(
+					algoRunTimeMap, Algorithm.APRIORI, minSup, (int)(experimentRunTime/NUM_RERUNS)
+				);
 
 				// AIS
-				experimentRunTime = AIS.runExperiment(dataset, minSup);
-				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
+				experimentRunTime = 0;
+				for(int i=1; i <= NUM_RERUNS; i++) {
+					experimentRunTime += AIS.runExperiment(dataset, minSup);					
+				}
+				insertIntoAlgoRunTimeMap(
+					algoRunTimeMap, Algorithm.AIS, minSup, (int)(experimentRunTime/NUM_RERUNS)
+				);
+				
+				// SETM
+				//experimentRunTime = SETM.runExperiment(dataset, minSup);
+				//insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
 			}
 			
 			// Draw the graph for this specific dataset

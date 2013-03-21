@@ -45,7 +45,6 @@ public class DBUtils {
 	public static boolean executeInsertQuery(String query)
 	{
 		init();
-		System.out.println("#Query to run : " + query);
 		boolean isQueryDone = false;
 		try {
 			Statement dbQueryStmt = dbConn.createStatement();

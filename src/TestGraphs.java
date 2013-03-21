@@ -30,7 +30,7 @@ public class TestGraphs {
 		minSupRunTimeMap.put(MinSup.TWO_PERCENT, 9);
 		algoRunTimeMap.put(Algorithm.AIS, minSupRunTimeMap);
 		
-		GraphUtils.drawGraph(algoRunTimeMap, Dataset.REF_TESTDATA);
+		GraphUtils.drawGraph(algoRunTimeMap, Dataset.T5_I2_D100K);
 	}
 
 }
