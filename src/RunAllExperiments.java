@@ -30,6 +30,11 @@ public class RunAllExperiments {
 		for(Dataset dataset : Dataset.values()) {
 			algoRunTimeMap = Maps.newTreeMap();
 			for(MinSup minSup : MinSup.values()) {
+				
+				// AIS
+				experimentRunTime = Apriori.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
+				
 				// Apriori
 				experimentRunTime = Apriori.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI, minSup, experimentRunTime);

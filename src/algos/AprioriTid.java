@@ -122,7 +122,7 @@ public class AprioriTid {
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		//printAll(candidateItemsets[1].getItemsets());
 		//System.out.println("\nk = " + 1);
-		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
 			//System.out.println("\nk = " + k);
@@ -133,7 +133,7 @@ public class AprioriTid {
 			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 			//System.out.println("3");
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();

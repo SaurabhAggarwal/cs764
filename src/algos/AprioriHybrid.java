@@ -93,7 +93,7 @@ public class AprioriHybrid {
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
-		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		
 		boolean switch_to_aprioritid = false;
 		boolean in_transition = false;
@@ -134,7 +134,7 @@ public class AprioriHybrid {
 				candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 				largeItemsets[k] = generateLargeItemsets_AprioriTID(candidateItemsets[k], minSupportCount);
 			}
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
