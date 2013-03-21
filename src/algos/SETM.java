@@ -1,15 +1,17 @@
 package algos;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import model.Algorithm;
 import model.Dataset;
 import model.ItemSet;
 import model.MinSup;
 import util.DBUtils;
+import util.OutputUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -48,18 +50,22 @@ public class SETM {
 			if(entry.getValue().isEmpty()) {
 				continue;
 			}
-
-			System.out.println("Itemsets for size " + entry.getKey() + " are : " + 
-								Arrays.toString(entry.getValue().toArray()));
 		}
 		
 		long expEndTime = System.currentTimeMillis();
 		System.out.println(
-				"Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
-				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
-				" {Large itemset generation : " + (largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
+				"Time taken for experiment " + Algorithm.SETM.toString() + "/" + dataset.toString() + 
+				" with support " + minSup.toString() + " % support is " + 
+				(expEndTime - expStartTime)/1000 + " s --> " + " {Large itemset generation : " + 
+				(largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
 		);
-		
+
+		try {
+			OutputUtils.writeOutputToFile(Algorithm.SETM, dataset, minSup, largeItemSetsMap);
+		} catch (IOException e) {
+			System.err.println("Failed to write output to file. Reason : " + e);
+		}
+
 		return (int)(expEndTime - expStartTime)/1000;
 
 	}

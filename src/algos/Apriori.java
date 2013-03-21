@@ -1,42 +1,32 @@
 package algos;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import model.Algorithm;
-import model.CandidateItemset;
 import model.Dataset;
 import model.HashTreeNode;
 import model.ItemSet;
-import model.LargeItemset;
 import model.MinSup;
 import model.Transaction;
-import model.aprioritid.CandidateItemsetBar;
-import util.AprioriUtils;
 import util.DBReader;
 import util.HashTreeUtils;
 import util.InputReader;
+import util.MiningUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Implements the classical Apriori Algorithm for frequent itemset mining.
  * 
- * @author saurabh
+ * @author shishir
  *
  */
 public class Apriori {
-
-	private static int MAX_K;
-	
-	public static void main(String[] args)
-	{
-		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
-	}
-	
 
 	/*
 	 * Run Apriori algorithm for the specified experiment parameters.
@@ -50,122 +40,203 @@ public class Apriori {
 	{
 		long expStartTime = System.currentTimeMillis();
 		
-		MAX_K = 400 * dataset.getAvgTxnSize();
-		
+		// Store the large itemsets for each level
+		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newHashMap();
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
+		long initialLargeSetGenStart = System.currentTimeMillis();
 		InputReader reader = getDatasetReader(dataset);
+		List<ItemSet> largeItemsets = 
+				MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
+		long initialLargeSetGenEnd = System.currentTimeMillis();
 		
-		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
-		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
-		CandidateItemsetBar[] candidateItemsetBars = new CandidateItemsetBar[MAX_K];
+		long largeItemsetGenStart = System.currentTimeMillis();
+		int currItemsetSize = 1;
+		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 		
-		candidateItemsets[1] = new CandidateItemset(MAX_K);
-		candidateItemsetBars[1] = new CandidateItemsetBar();
-		largeItemsets[1] = new LargeItemset();
-		
-		getInitialCandidateItemsets(reader, candidateItemsets[1]);
-		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
-		
-		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
-		
-		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
-		{
-			candidateItemsets[k] = new CandidateItemset(MAX_K);
-			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
-			
-			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
-			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
+		/*
+		 * Keep iterating till no further large itemsets are being generated
+		 */
+		long passStart = System.currentTimeMillis();
+		long passEnd = System.currentTimeMillis();
+		while(!largeItemsets.isEmpty()) {
+			passStart = System.currentTimeMillis();
+			List<ItemSet> candidateKItemsets = generateCandidateItemsets(largeItemsets, currItemsetSize);
+			++currItemsetSize;
 
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateKItemsets, currItemsetSize);
+			reader = getDatasetReader(dataset);
+			while(reader.hasNextTransaction()) {
+				Transaction txn = reader.getNextTransaction();
+				List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+				for(ItemSet c : candidateSetsInTrans) {
+					c.setSupportCount(c.getSupportCount() + 1);
+				}
+			}
+
+			largeItemsets = Lists.newArrayList();
+			for(ItemSet i : candidateKItemsets) {
+				if(i.getSupportCount() >= minSupportCount) {
+					largeItemsets.add(i);
+				}
+			}
+			
+			if(!largeItemsets.isEmpty()) {
+				largeItemSetsMap.put(currItemsetSize, largeItemsets);
+			}
+			
+			passEnd = System.currentTimeMillis();
+			System.out.println("Time taken for large-itemset generation pass " + currItemsetSize + " is " + 
+			                    (passEnd - passStart)/1000 + " s ");
+		}
+		long largeItemsetGenEnd = System.currentTimeMillis();
+		
+		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
+			System.out.println("Itemsets for size " + entry.getKey() + " are : " + Arrays.toString(entry.getValue().toArray()));
 		}
 		
 		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.");
-		
-		return timeTaken;
-	}
-	
-	private static LargeItemset generateLargeItemsets(InputReader reader, CandidateItemset candidateItemset, int minSupportCount, int currItemsetSize) {
-		
-		//System.out.println("In generateLargeItemsets().");
-		
-		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemset.getItemsets(), currItemsetSize);
-		
-		while(reader.hasNextTransaction()) {
-			Transaction txn = reader.getNextTransaction();
-			List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
-			for(ItemSet c : candidateSetsInTrans) {
-				c.setSupportCount(c.getSupportCount() + 1);
-			}
-		}
-		
-		LargeItemset largeItemset = new LargeItemset();
-		int index = 0;
-		for(ItemSet itemset : candidateItemset.getItemsets())
-		{
-			if(itemset == null)
-				break;
-			if(itemset.getSupportCount() >= minSupportCount)
-				largeItemset.getItemsetIds().add(index);
-			index++;
-		}
-		
-		return largeItemset;
-	}
-	
-	private static void getInitialCandidateItemsets(InputReader reader, CandidateItemset C) {
-		//System.out.println("In getInitialCandidateItemsets().");
-		SortedMap<Integer, Integer> itemset_support = new TreeMap<Integer, Integer>();
-		
-		//This loop counts support.
-		while(reader.hasNextTransaction())
-		{
-			Transaction t = reader.getNextTransaction();
-		
-			for(Integer i : t.getItems())
-			{
-				if(itemset_support.containsKey(i))
-				{
-					int support = itemset_support.get(i);
-					itemset_support.put(i, support + 1);
-				}
-				else
-				{
-					itemset_support.put(i, 1);
-				}
-			}
-		}
-		
-		//This part sorts and creates candidate itemsets.
-		SortedSet<Integer> keys = new TreeSet<Integer>(itemset_support.keySet());
-		Map<Integer, Integer> itemset_pos = new HashMap<Integer, Integer>(); 
-		int index = 0;
-		for(Integer item : keys)
-		{
-			Integer support = itemset_support.get(item);
-			C.getItemsets()[index] = new ItemSet();
-			C.getItemsets()[index].getItems().add(item);
-			C.getItemsets()[index].setSupportCount(support);
-			
-			itemset_pos.put(item, index);
-			index++;
-		}
+		System.out.println(
+				" Time taken for experiment " + dataset.toString() + " with support " + minSup.toString() + 
+				" % support is " + (expEndTime - expStartTime)/1000 + " s --> " +
+				" {1-Large itemset generation : " + (initialLargeSetGenEnd - initialLargeSetGenStart)/1000 + " s } , " +
+				" {Other large Itemset generation : " + (largeItemsetGenEnd - largeItemsetGenStart)/1000 + " ms } "
+		); 
+
+		return (int)(expEndTime - expStartTime)/1000;
 	}
 
-	private static void getInitialLargeItemsets(CandidateItemset C, int minSupportCount, LargeItemset L)
+	/*
+	 * Find which all candidate sets occur in the transaction.
+	 */
+	public static List<ItemSet> subset(List<ItemSet> candidateItemsets, Transaction txn, Integer itemsetSize)
 	{
-		int index = 0;
-		for(ItemSet itemset : C.getItemsets()) {
-			if(itemset == null)
-				break;
-			if(itemset.getSupportCount() >= minSupportCount)
-				L.getItemsetIds().add(index);
-			index++;
+		List<ItemSet> transactionSets = Lists.newArrayList();
+		for(ItemSet c : candidateItemsets) {
+			List<Integer> candidateItems = c.getItems();
+			List<Integer> transactionItems = txn.getItems();
+			
+			int i=0;
+			int j=0;
+			while(i < candidateItems.size() && j < transactionItems.size()) {
+				if(candidateItems.get(i).equals(transactionItems.get(j))) {
+					++i; ++j;
+				}
+				else {
+					++j;
+				}
+			}
+			
+			if(i == candidateItems.size()) {
+				transactionSets.add(c);
+			}
 		}
+
+		return transactionSets;
 	}
-	
+
+	/*
+	 * Find which all candidate sets occur in the transaction using hash tree.
+	 */
+	public static List<ItemSet> subsetEfficient(List<ItemSet> candidateItemsets, Transaction txn, Integer itemsetSize)
+	{
+		HashTreeNode hashTreeRoot = HashTreeUtils.buildHashTree(candidateItemsets, itemsetSize);
+		return HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
+	}
+
+	/*
+	 * Generates candidate itemsets for next iteration based on the large itemsets of the 
+	 * previous iteration
+	 */
+	public static List<ItemSet> generateCandidateItemsets(List<ItemSet> largeItemSets, int itemSetSize)
+	{
+		// Large itemsets have to be in sorted order for the candidate sets to be generated 
+		// correctly in the subsequent step.
+		if(itemSetSize > 1) {
+			Collections.sort(largeItemSets);			
+		}
+			
+		
+		// Generate the candidate itemsets by joining the two itemsets in the large itemsets such 
+		// that except their last items match. Include all the matching items + the last item of 
+		// both the itemsets to generate a new candidate itemset. 
+		List<ItemSet> candidateItemSets = Lists.newArrayList();
+		List<Integer> items = null;
+		for(int i=0; i < (largeItemSets.size() -1); i++) {
+			for(int j=i+1; j < largeItemSets.size(); j++ ) {
+				List<Integer> outerItems = largeItemSets.get(i).getItems();
+				List<Integer> innerItems = largeItemSets.get(j).getItems();
+		
+				if((itemSetSize -1) > 0) {
+					boolean isMatch = true;
+					for(int k=0; k < (itemSetSize -1); k++) {
+						if(!outerItems.get(k).equals(innerItems.get(k))) {
+							isMatch = false;
+							break;
+						}
+					}
+					if(isMatch) {
+						items = Lists.newArrayList();
+						items.addAll(outerItems);
+						items.add(innerItems.get(itemSetSize-1));
+						
+						candidateItemSets.add(new ItemSet(items, 0));
+					}
+				}
+				// Handle the base case for generation of candidate itemsets for k-1 = 1.
+				else {
+					if(outerItems.get(0) < innerItems.get(0)) {
+						items = Lists.newArrayList();
+						items.add(outerItems.get(0));
+						items.add(innerItems.get(0));
+						
+						candidateItemSets.add(new ItemSet(items, 0));
+					}
+				}
+			}
+		}
+		
+		// Prune the generated candidate itemsets by removing all such candidate itemsets whose 
+		// any (K-1) subset does not belong to the list of (K-1) large itemsets.
+		List<ItemSet> finalCandidateItemSets = Lists.newArrayList();
+		for(ItemSet c : candidateItemSets) {
+			List<ItemSet> subsets = getSubsets(c);
+			
+			boolean isValidCandidate = true;
+			for(ItemSet s : subsets) {
+				if(!largeItemSets.contains(s)) {
+					isValidCandidate = false;
+					break;
+				}
+			}
+			
+			if(isValidCandidate) {
+				finalCandidateItemSets.add(c);
+			}
+		}
+
+		return finalCandidateItemSets;
+	}
+
+	/*
+	 * Generate all possible increasing k-1 subsets for this itemset
+	 */
+	private static List<ItemSet> getSubsets(ItemSet itemset)
+	{
+		List<ItemSet> subsets = new ArrayList<ItemSet>();
+		
+		List<Integer> items = itemset.getItems();
+		for(int i = 0; i < items.size(); i++) {
+			// Generate a new itemset containing all the items and sequentially remove one item
+			// to generate K-1 subset. Spotted by @Saurabh.
+			List<Integer> currItems = new ArrayList<Integer>(items);
+			currItems.remove(items.size() - 1 - i);
+			subsets.add(new ItemSet(currItems, 0));
+		}
+
+		return subsets;
+	}
+
 	/*
 	 * Gets a iterative reader to the dataset and algorithm corresponding to the current experiment.
 	 */
@@ -173,4 +244,5 @@ public class Apriori {
 	{
 		return new DBReader(dataset, Algorithm.APRIORI);
 	}
+
 }
