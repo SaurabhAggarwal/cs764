@@ -85,4 +85,28 @@ public class MiningUtils {
 	{
 		return itemset.getSupportCount() >= minSupport ? true : false;
 	}
+	
+	/*
+	 * Generates a map of hashcode and the corresponding itemset. Since multiple hashcodes can
+	 * have the same hashcode, there would be a list of itemsets for any hashcode.
+	 */
+	public static Map<Integer, List<ItemSet>> getLargeItemsetMap(List<ItemSet> largeItemsets)
+	{
+		Map<Integer, List<ItemSet>> largeItemsetMap = Maps.newHashMap();
+		
+		List<ItemSet> itemsets = null;
+		for(ItemSet itemset : largeItemsets) {
+			int hashCode = itemset.hashCode();
+			if(largeItemsetMap.containsKey(hashCode)) {
+				itemsets = largeItemsetMap.get(hashCode);
+			}
+			else {
+				itemsets = Lists.newArrayList();
+			}
+			
+			largeItemsetMap.put(hashCode, itemsets);
+		}
+
+		return largeItemsetMap;
+	}
 }

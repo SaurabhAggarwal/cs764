@@ -102,6 +102,7 @@ public class AprioriUtils {
 			if(!contains)
 				return false;
 		}
+
 		return true;
 	}
 	

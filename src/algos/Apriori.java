@@ -16,7 +16,6 @@ import model.ItemSet;
 import model.LargeItemset;
 import model.MinSup;
 import model.Transaction;
-import model.aprioritid.CandidateItemsetBar;
 import util.AprioriUtils;
 import util.DBReader;
 import util.HashTreeUtils;
@@ -34,9 +33,8 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
-	
 
 	/*
 	 * Run Apriori algorithm for the specified experiment parameters.
@@ -58,10 +56,8 @@ public class Apriori {
 		
 		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
 		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
-		CandidateItemsetBar[] candidateItemsetBars = new CandidateItemsetBar[MAX_K];
 		
 		candidateItemsets[1] = new CandidateItemset(MAX_K);
-		candidateItemsetBars[1] = new CandidateItemsetBar();
 		largeItemsets[1] = new LargeItemset();
 		
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
