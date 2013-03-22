@@ -82,7 +82,7 @@ public class DBReader extends InputReader
 		boolean hasMoreTransactions = (currTransactionId <= getDataset().getNumTxns());
 		if(!hasMoreTransactions) {
 			endTime = System.currentTimeMillis();
-			System.out.println("#DB Time " + getDatasetReadTime());
+			//System.out.println("#DB Time " + getDatasetReadTime());
 			try {
 				dbConn.close();
 			} catch (SQLException e) {
