@@ -19,11 +19,11 @@ import util.Constants;
  */
 public enum Dataset {
 	//REF_TESTDATA(3, 2, 4, "/data/simple", "REF_TESTDATASET"),
-	T5_I2_D100K(5, 2, 97048,    "/data/T5.I2.D100K",  "T5_I2_D100K"),
-	T10_I2_D100K(10, 2, 99916,  "/data/T10.I2.D100K", "T10_I2_D100K"),
-	T10_I4_D100K(10, 4, 98395,  "/data/T10.I4.D100K", "T10_I4_D100K"),
-	T20_I2_D100K(20, 2, 100000, "/data/T20.I2.D100K", "T20_I2_D100K"),
-	T20_I4_D100K(20, 4, 99996,  "/data/T20.I4.D100K", "T2_I4_D100K"),
+	//T5_I2_D100K(5, 2, 97048,    "/data/T5.I2.D100K",  "T5_I2_D100K"),
+	//T10_I2_D100K(10, 2, 99916,  "/data/T10.I2.D100K", "T10_I2_D100K"),
+	//T10_I4_D100K(10, 4, 98395,  "/data/T10.I4.D100K", "T10_I4_D100K"),
+	//T20_I2_D100K(20, 2, 100000, "/data/T20.I2.D100K", "T20_I2_D100K"),
+	T20_I4_D100K(20, 4, 99996,  "/data/T20.I4.D100K", "T20_I4_D100K"),
 	T20_I6_D100K(20, 6, 99942,  "/data/T20.I6.D100K", "T20_I6_D100K");
 
 	private int avgTxnSize, avgMaxLargeItemsetSize;
