@@ -126,6 +126,8 @@ public class AprioriTid {
 		//printAll(candidateItemsets[1].getItemsets());
 		//System.out.println("\nk = " + 1);
 		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		long bottleNeckStartTime = 0;
+		long bottleNeckEndTime = 0;
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
 			//System.out.println("\nk = " + k);
@@ -133,7 +135,12 @@ public class AprioriTid {
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
 			//System.out.println("2");
+			
+			if(k == 2)
+				bottleNeckStartTime = System.currentTimeMillis();
 			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
+			if(k == 2)
+				bottleNeckEndTime = System.currentTimeMillis();
 			//System.out.println("3");
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
@@ -141,6 +148,7 @@ public class AprioriTid {
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.\n");
 		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
