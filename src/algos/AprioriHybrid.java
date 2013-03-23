@@ -105,6 +105,7 @@ public class AprioriHybrid {
 		{
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			largeItemsets[k-1] = null; 
 			
 			long estimateSizeCBar = getEstimateSizeCBar(dataset.getNumTxns(), candidateItemsets[k]);
 			long freeMemory = getFreeMemory();
@@ -139,6 +140,8 @@ public class AprioriHybrid {
 				candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 				largeItemsets[k] = generateLargeItemsets_AprioriTID(candidateItemsets[k], minSupportCount);
 			}
+			candidateItemsetBars[k-1] = null;
+			candidateItemsets[k-1] = null;
 			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
