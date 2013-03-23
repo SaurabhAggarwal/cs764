@@ -1,12 +1,12 @@
 package algos;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import model.Algorithm;
 import model.Dataset;
-import util.DBReader;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
@@ -18,7 +18,6 @@ import util.OutputUtils;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Implements AIS algorithm for frequent itemset mining.
@@ -30,7 +29,7 @@ public class AIS {
 
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 
 	/*
@@ -44,30 +43,11 @@ public class AIS {
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
 		System.out.println("AIS: " + dataset + ", " + minSup);
-		
-		long expStartTime = System.currentTimeMillis();
-		
-		Map<Integer, Integer> candidateCountMap = Maps.newTreeMap();
-		Map<Integer, List<ItemSet>> largeItemSetsMap = 
-			getLargeItemSetsMap(dataset, minSup, candidateCountMap);
-		
-		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
-			if(entry.getValue().isEmpty()) {
-				continue;
-			}
-		}
-		
-		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.\n");
-		
-		try {
-			OutputUtils.writeOutputToFile(Algorithm.AIS, dataset, minSup, largeItemSetsMap);
-		} catch (IOException e) {
-			System.err.println("Failed to write output to file. Reason : " + e);
-		}
 
-		return (int)(expEndTime - expStartTime)/1000;
+		int expRunTime = generateLargeItemSets(dataset, minSup);
+		System.out.println("Time taken = " + expRunTime + " seconds.\n");
+		
+		return expRunTime;
 	}
 
 	/*
@@ -80,19 +60,32 @@ public class AIS {
 	 * 
 	 * @returns Map of large itemsets for each pass
 	 */
-	private static Map<Integer, List<ItemSet>> getLargeItemSetsMap(
-			Dataset dataset, MinSup minSup, Map<Integer, Integer> candidateCountMap)
+	private static int generateLargeItemSets(Dataset dataset, MinSup minSup)
 	{
+		long expStartTime = System.currentTimeMillis();
+		long fileWriteTime = 0;
+		List<Integer> candidateItemsetsCount = Lists.newArrayList();
+
+		File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.AIS, dataset, minSup);
+		File candItemsetsCountFile = OutputUtils.getOutputFile("CANDITEMSETSCOUNT", Algorithm.AIS, dataset, minSup);
+
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
-		
 		InputReader reader = getDatasetReader(dataset);
-		List<ItemSet> largeItemsets = 
-				MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
+		List<ItemSet> largeItemsets = MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
+
 		int currItemsetSize = 1;
-		Map<Integer, List<ItemSet>> largeItemSetsMap = Maps.newTreeMap();
-		largeItemSetsMap.put(currItemsetSize, largeItemsets);
 	
 		while(!largeItemsets.isEmpty()) {
+			// Write large itemsets to file
+			try {
+				long fileWriteStartTime = System.currentTimeMillis();
+				Collections.sort(largeItemsets);
+				OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, largeItemsets);
+				fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+			} catch (IOException e) {
+				System.err.println("Failed to write to file. Reason : " + e);
+			}
+
 			++currItemsetSize; // Pass number = Size of large items in this pass
 			
 			/*
@@ -162,12 +155,22 @@ public class AIS {
 					largeItemsets.add(candidate);
 				}
 			}
-			
-			largeItemSetsMap.put(currItemsetSize, largeItemsets);
-			candidateCountMap.put(currItemsetSize, candidateKItemSetMap.values().size());
-		}
 		
-		return largeItemSetsMap;
+			candidateItemsetsCount.add(candidateKItemSetMap.values().size());
+		}
+
+		try {
+			long fileWriteStartTime = System.currentTimeMillis();
+			OutputUtils.writeCandidateCountToFile(candItemsetsCountFile, candidateItemsetsCount);
+			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+		} catch (IOException e) {
+			System.err.println("Failed to write candidate itemset count to file. Reason : " + e);
+		}
+
+		long expEndTime = System.currentTimeMillis();
+		int expTime = (int)(expEndTime - expStartTime - fileWriteTime)/1000;
+
+		return expTime;
 	}
 	
 	/* Returns set of 1-extension itemsets corresponding the input large itemset and

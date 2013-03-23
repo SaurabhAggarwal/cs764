@@ -46,9 +46,6 @@ public class OutputUtils {
 			List<ItemSet> largeItemsetsCurrPass = entry.getValue();
 			Collections.sort(largeItemsetsCurrPass);
 			
-			bw.write("Large itemsets of size " + entry.getKey() + " are " + largeItemsetsCurrPass.size());
-			bw.newLine();
-
 			for(ItemSet itemset : largeItemsetsCurrPass) {
 				if(itemset == null || itemset.getItems() == null || itemset.getItems().isEmpty()) {
 					continue;
@@ -57,6 +54,68 @@ public class OutputUtils {
 				bw.write(itemset.toString());
 				bw.newLine();
 			}
+		}
+		
+		bw.close();
+	}
+	
+	/*
+	 * Returns handle to the file object that would be used to store the output large itemsets
+	 * for this experiment/ candidate itemset count for each pass.
+	 * 
+	 * @param opFileType - Type of output file.
+	 */
+	public static File getOutputFile(String opFileType, Algorithm algo, Dataset dataset, MinSup minSup)
+	{
+		StringBuilder opFileName = new StringBuilder();
+		opFileName.append(algo.toString()).append("_");
+		opFileName.append(dataset.toString()).append("_");
+		opFileName.append(minSup.getMinSupPercentage());
+
+		StringBuilder fileLoc = new StringBuilder();
+		try {
+			fileLoc.append(new File(".").getCanonicalPath());
+			fileLoc.append("/output/");
+			fileLoc.append(opFileName.toString()).append("_");
+			fileLoc.append(opFileType);
+			fileLoc.append(".txt");
+		} catch (IOException e) {
+			System.err.println("Failed to generate the file location. Reason : " + e);
+		}
+
+		return new File(fileLoc.toString());
+	}
+
+	/*
+	 * Populates output file with the large itemsets generated for each pass.
+	 */
+	public static void writeLargeItemsetsToFile(File file, List<ItemSet> largeItemsets) throws IOException
+	{
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+		for(ItemSet itemset : largeItemsets) {
+			if(itemset == null || itemset.getItems() == null || itemset.getItems().isEmpty()) {
+				continue;
+			}
+
+			bw.write(itemset.toString());
+			bw.newLine();
+		}
+
+		bw.close();
+	}
+	
+	/*
+	 * Populates output file with the number of candidate itemsets generated for each pass.
+	 */
+	public static void writeCandidateCountToFile(File file, List<Integer> candidateItemsetsCount) throws IOException
+	{
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		
+		int passCounter = 0;
+		for(Integer itemsetsCount : candidateItemsetsCount) {
+			++passCounter;
+			bw.write(passCounter + " - " + itemsetsCount);
+			bw.newLine();
 		}
 		
 		bw.close();
