@@ -4,6 +4,7 @@ import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
 import util.GraphUtils;
+import algos.AIS;
 import algos.Apriori;
 import algos.AprioriHybrid;
 import algos.AprioriTid;
@@ -32,7 +33,7 @@ public class RunAllExperiments {
 			for(MinSup minSup : MinSup.values()) {
 				
 				// AIS
-				experimentRunTime = Apriori.runExperiment(dataset, minSup);
+				experimentRunTime = AIS.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
 				
 				// Apriori
