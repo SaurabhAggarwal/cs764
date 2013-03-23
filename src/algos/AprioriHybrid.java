@@ -140,6 +140,8 @@ public class AprioriHybrid {
 				candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 				largeItemsets[k] = generateLargeItemsets_AprioriTID(candidateItemsets[k], minSupportCount);
 			}
+			candidateItemsetBars[k-1] = null;
+			candidateItemsets[k-1] = null;
 			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		

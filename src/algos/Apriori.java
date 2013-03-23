@@ -72,6 +72,7 @@ public class Apriori {
 		{
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			candidateItemsets[k-1] = null;
 			largeItemsets[k-1] = null; 
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
