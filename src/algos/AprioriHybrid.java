@@ -115,7 +115,9 @@ public class AprioriHybrid {
 				//{
 					switch_to_aprioritid = true;
 					in_transition = true;
-					//System.out.println("Switching to AprioriTID.");
+					System.out.println("Switching to AprioriTID at pass k = " + k);
+					System.out.println("Estimated size of C_bar = " + estimateSizeCBar / 1024 + " KB.");
+					System.out.println("Free memory = " + freeMemory / 1024 + " KB.");
 				//}
 			}
 			
