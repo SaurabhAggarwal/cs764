@@ -148,7 +148,7 @@ public class AprioriTid {
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.\n");
+		System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.");
 		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
