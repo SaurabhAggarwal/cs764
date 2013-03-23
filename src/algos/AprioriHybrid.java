@@ -75,6 +75,8 @@ public class AprioriHybrid {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("AprioriHybrid: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		MAX_K = 400 * dataset.getAvgTxnSize();
@@ -141,8 +143,7 @@ public class AprioriHybrid {
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
 		
-		System.out.println("Time taken = " + timeTaken + " seconds.");
-		System.out.println("The End !");
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}

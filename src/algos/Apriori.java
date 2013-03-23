@@ -35,7 +35,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T20_I6_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 
@@ -49,6 +49,8 @@ public class Apriori {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("Apriori: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		MAX_K = 400 * dataset.getAvgTxnSize();
@@ -83,7 +85,7 @@ public class Apriori {
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.");
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}

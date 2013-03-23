@@ -43,6 +43,8 @@ public class AIS {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("AIS: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		long largeItemSetGenStart = System.currentTimeMillis();
@@ -58,12 +60,16 @@ public class AIS {
 		}
 		
 		long expEndTime = System.currentTimeMillis();
+		/*
 		System.out.println(
 				"Time taken for experiment " + Algorithm.AIS.toString() + "/" + dataset.toString() + 
 				" with support " + minSup.toString() + " % support is " + 
 				(expEndTime - expStartTime)/1000 + " s --> " + " {Large itemset generation : " + 
 				(largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
 		);
+		*/
+		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		try {
 			OutputUtils.writeOutputToFile(Algorithm.AIS, dataset, minSup, largeItemSetsMap);

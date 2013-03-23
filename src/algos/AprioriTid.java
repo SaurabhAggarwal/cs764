@@ -98,6 +98,8 @@ public class AprioriTid {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("AprioriTid: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		InputReader reader = getDatasetReader(dataset);
@@ -139,8 +141,7 @@ public class AprioriTid {
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.");
-		System.out.println("The End !");
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}
