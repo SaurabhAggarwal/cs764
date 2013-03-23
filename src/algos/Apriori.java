@@ -11,6 +11,7 @@ import java.util.TreeSet;
 import model.Algorithm;
 import model.CandidateItemset;
 import model.Dataset;
+import util.DBReader;
 import model.HashTreeNode;
 import model.ItemSet;
 import model.LargeItemset;
@@ -46,6 +47,8 @@ public class Apriori {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("Apriori: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		MAX_K = 400 * dataset.getAvgTxnSize();
@@ -63,7 +66,7 @@ public class Apriori {
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
-		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
@@ -73,12 +76,12 @@ public class Apriori {
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
 
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.");
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}

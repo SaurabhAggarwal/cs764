@@ -20,6 +20,7 @@ import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.ItemSetBar;
 import util.AprioriUtils;
 import util.DBReader;
+import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
 
@@ -74,6 +75,8 @@ public class AprioriHybrid {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
+		System.out.println("AprioriHybrid: " + dataset + ", " + minSup);
+		
 		long expStartTime = System.currentTimeMillis();
 		
 		MAX_K = 400 * dataset.getAvgTxnSize();
@@ -112,7 +115,9 @@ public class AprioriHybrid {
 				//{
 					switch_to_aprioritid = true;
 					in_transition = true;
-					//System.out.println("Switching to AprioriTID.");
+					System.out.println("Switching to AprioriTID at pass k = " + k);
+					System.out.println("Estimated size of C_bar = " + estimateSizeCBar / 1024 + " KB.");
+					System.out.println("Free memory = " + freeMemory / 1024 + " KB.");
 				//}
 			}
 			
@@ -140,8 +145,7 @@ public class AprioriHybrid {
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
 		
-		System.out.println("Time taken = " + timeTaken + " seconds.");
-		System.out.println("The End !");
+		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}
@@ -329,7 +333,7 @@ public class AprioriHybrid {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.APRIORI_HYBRID);
+		return new FileReader(dataset, Algorithm.APRIORI_HYBRID);
 	}
 
 }
