@@ -20,6 +20,7 @@ import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.ItemSetBar;
 import util.AprioriUtils;
 import util.DBReader;
+import util.FileReader;
 import util.InputReader;
 
 
@@ -229,6 +230,6 @@ public class AprioriTid {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.APRIORI_TID);
+		return new FileReader(dataset, Algorithm.APRIORI_TID);
 	}
 }

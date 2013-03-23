@@ -10,6 +10,7 @@ import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
 import util.DBReader;
+import util.FileReader;
 import util.InputReader;
 import util.MiningUtils;
 import util.OutputUtils;
@@ -211,6 +212,6 @@ public class AIS {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.AIS);
+		return new FileReader(dataset, Algorithm.AIS);
 	}
 }

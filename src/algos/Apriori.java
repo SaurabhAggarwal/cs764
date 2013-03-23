@@ -19,6 +19,7 @@ import model.Transaction;
 import model.aprioritid.CandidateItemsetBar;
 import util.AprioriUtils;
 import util.DBReader;
+import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
 
@@ -67,7 +68,7 @@ public class Apriori {
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
-		AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
 		
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
@@ -77,7 +78,7 @@ public class Apriori {
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
 
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}
 		
 		long expEndTime = System.currentTimeMillis();
@@ -171,6 +172,6 @@ public class Apriori {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.APRIORI);
+		return new FileReader(dataset, Algorithm.APRIORI);
 	}
 }
