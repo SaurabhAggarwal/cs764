@@ -142,6 +142,7 @@ public class AprioriTid {
 			if(k == 2)
 				bottleNeckEndTime = System.currentTimeMillis();
 			//System.out.println("3");
+			largeItemsets[k-1] = null; 
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
 		}

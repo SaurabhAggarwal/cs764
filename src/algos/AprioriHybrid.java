@@ -105,6 +105,7 @@ public class AprioriHybrid {
 		{
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
+			largeItemsets[k-1] = null; 
 			
 			long estimateSizeCBar = getEstimateSizeCBar(dataset.getNumTxns(), candidateItemsets[k]);
 			long freeMemory = getFreeMemory();
