@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +44,11 @@ public class OutputUtils {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(fileLoc)));
 		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
 			List<ItemSet> largeItemsetsCurrPass = entry.getValue();
+			Collections.sort(largeItemsetsCurrPass);
+			
+			bw.write("Large itemsets of size " + entry.getKey() + " are " + largeItemsetsCurrPass.size());
+			bw.newLine();
+
 			for(ItemSet itemset : largeItemsetsCurrPass) {
 				if(itemset == null || itemset.getItems() == null || itemset.getItems().isEmpty()) {
 					continue;

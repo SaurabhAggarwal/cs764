@@ -1,6 +1,7 @@
 package util;
 
 import java.util.List;
+import java.util.Map;
 
 import model.ItemSet;
 
@@ -38,6 +39,14 @@ public class PrintUtils {
 				System.out.print(j + " ");
 			System.out.println("==> " + itemset.getSupportCount());
 			index++;
+		}
+	}
+	
+	public static void printItemsetsMap(Map<Integer, List<ItemSet>> itemsetsMap)
+	{
+		for(Map.Entry<Integer, List<ItemSet>> entry : itemsetsMap.entrySet()) {
+			List<ItemSet> itemsets = entry.getValue();
+			System.out.println("{" + entry.getKey() + " | " + itemsets.toString());
 		}
 	}
 }

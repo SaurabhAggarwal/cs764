@@ -1,5 +1,6 @@
 package util;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -95,6 +97,15 @@ public class GraphUtils{
         // We want values of higher minimum support percentages to be shown first, in
         // accordance with the graphs in the paper.
         chart.getXYPlot().getDomainAxis().setInverted(true);
+
+        // We wanted the colours to be a bit darker. So, that is why explicitly setting the
+        // series colours here.
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.getRenderer().setSeriesPaint(0, Color.RED);
+        plot.getRenderer().setSeriesPaint(1, Color.BLUE);
+        plot.getRenderer().setSeriesPaint(2, Color.BLACK);
+        plot.getRenderer().setSeriesPaint(3, Color.ORANGE);
+        plot.getRenderer().setSeriesPaint(4, Color.MAGENTA);
 
         return chart;
 	}

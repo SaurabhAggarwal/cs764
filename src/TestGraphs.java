@@ -29,7 +29,25 @@ public class TestGraphs {
 		minSupRunTimeMap.put(MinSup.ONE_PERCENT, 19);
 		minSupRunTimeMap.put(MinSup.TWO_PERCENT, 9);
 		algoRunTimeMap.put(Algorithm.AIS, minSupRunTimeMap);
-		
+
+		minSupRunTimeMap = Maps.newHashMap();
+		minSupRunTimeMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 42);
+		minSupRunTimeMap.put(MinSup.ONE_PERCENT, 59);
+		minSupRunTimeMap.put(MinSup.TWO_PERCENT, 99);
+		algoRunTimeMap.put(Algorithm.SETM, minSupRunTimeMap);
+
+		minSupRunTimeMap = Maps.newHashMap();
+		minSupRunTimeMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 12);
+		minSupRunTimeMap.put(MinSup.ONE_PERCENT, 29);
+		minSupRunTimeMap.put(MinSup.TWO_PERCENT, 39);
+		algoRunTimeMap.put(Algorithm.APRIORI_TID, minSupRunTimeMap);
+
+		minSupRunTimeMap = Maps.newHashMap();
+		minSupRunTimeMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 52);
+		minSupRunTimeMap.put(MinSup.ONE_PERCENT, 69);
+		minSupRunTimeMap.put(MinSup.TWO_PERCENT, 129);
+		algoRunTimeMap.put(Algorithm.APRIORI_HYBRID, minSupRunTimeMap);
+
 		GraphUtils.drawGraph(algoRunTimeMap, Dataset.T5_I2_D100K);
 	}
 

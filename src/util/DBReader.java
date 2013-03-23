@@ -82,7 +82,6 @@ public class DBReader extends InputReader
 		boolean hasMoreTransactions = (currTransactionId <= getDataset().getNumTxns());
 		if(!hasMoreTransactions) {
 			endTime = System.currentTimeMillis();
-			//System.out.println("#DB Time " + getDatasetReadTime());
 			try {
 				dbConn.close();
 			} catch (SQLException e) {
@@ -105,7 +104,7 @@ public class DBReader extends InputReader
 	{
 		String tableName = getDataset().getDatasetDBTable();
 		String query = 
-			" SELECT itemID FROM " + tableName + " USE INDEX (pk_tid) WHERE tid = ?";
+			" SELECT itemID FROM " + tableName + " WHERE tid = ?";
 		
 		return query;
 	}

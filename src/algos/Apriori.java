@@ -17,7 +17,7 @@ import model.LargeItemset;
 import model.MinSup;
 import model.Transaction;
 import util.AprioriUtils;
-import util.DBReader;
+import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
 
@@ -33,7 +33,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 
 	/*
@@ -167,6 +167,6 @@ public class Apriori {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.APRIORI);
+		return new FileReader(dataset, Algorithm.APRIORI);
 	}
 }

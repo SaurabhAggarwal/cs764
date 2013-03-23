@@ -87,7 +87,7 @@ public class MiningUtils {
 	}
 	
 	/*
-	 * Generates a map of hashcode and the corresponding itemset. Since multiple hashcodes can
+	 * Generates a map of hashcode and the corresponding itemset. Since multiple entries can
 	 * have the same hashcode, there would be a list of itemsets for any hashcode.
 	 */
 	public static Map<Integer, List<ItemSet>> getLargeItemsetMap(List<ItemSet> largeItemsets)
@@ -95,15 +95,16 @@ public class MiningUtils {
 		Map<Integer, List<ItemSet>> largeItemsetMap = Maps.newHashMap();
 		
 		List<ItemSet> itemsets = null;
-		for(ItemSet itemset : largeItemsets) {
-			int hashCode = itemset.hashCode();
+		for(ItemSet largeItemset : largeItemsets) {
+			int hashCode = largeItemset.hashCode();
 			if(largeItemsetMap.containsKey(hashCode)) {
 				itemsets = largeItemsetMap.get(hashCode);
 			}
 			else {
 				itemsets = Lists.newArrayList();
 			}
-			
+
+			itemsets.add(largeItemset);
 			largeItemsetMap.put(hashCode, itemsets);
 		}
 

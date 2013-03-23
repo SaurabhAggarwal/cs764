@@ -4,9 +4,11 @@ import model.Algorithm;
 import model.Dataset;
 import model.MinSup;
 import util.GraphUtils;
+import algos.AIS;
 import algos.Apriori;
 import algos.AprioriHybrid;
 import algos.AprioriTid;
+import algos.SETM;
 
 import com.google.common.collect.Maps;
 
@@ -19,9 +21,7 @@ import com.google.common.collect.Maps;
  */
 public class RunAllExperiments {
 
-	/*
-	 * Run each experiment 3 times and then take the average of these # of runs.
-	 */
+	// Run each experiment 3 times and then take the average of these # of runs.
 	private static final int NUM_RERUNS = 3;
 
 	public static void main(String[] args) {
@@ -32,7 +32,7 @@ public class RunAllExperiments {
 			for(MinSup minSup : MinSup.values()) {
 				
 				// AIS
-				experimentRunTime = Apriori.runExperiment(dataset, minSup);
+				experimentRunTime = AIS.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
 				
 				// Apriori
@@ -48,8 +48,8 @@ public class RunAllExperiments {
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
 				
 				// SETM
-				//experimentRunTime = SETM.runExperiment(dataset, minSup);
-				//insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
+				experimentRunTime = SETM.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
 			}
 			
 			// Draw the graph for this specific dataset
@@ -73,7 +73,6 @@ public class RunAllExperiments {
 		}
 		
 		minSupRunTimeMap.put(minSup, runTime);
-		
 		algoRunTimeMap.put(algo, minSupRunTimeMap);
 	}
 	

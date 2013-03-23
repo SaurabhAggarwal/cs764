@@ -9,7 +9,7 @@ import model.Dataset;
 import model.ItemSet;
 import model.MinSup;
 import model.Transaction;
-import util.DBReader;
+import util.FileReader;
 import util.InputReader;
 import util.MiningUtils;
 import util.OutputUtils;
@@ -113,7 +113,7 @@ public class AIS {
 				Transaction txn = reader.getNextTransaction();
 				// Determine which large items of last pass are present in the current transaction.
 				List<ItemSet> largeItemsetsInTxn = 
-						MiningUtils.getSubsetItemsets(largeItemsets, txn, currItemsetSize-1);
+					MiningUtils.getSubsetItemsets(largeItemsets, txn, currItemsetSize-1);
 				
 				for(ItemSet largeItemSet : largeItemsetsInTxn) {
 					// Generate 1-extension candidate sets from the large itemsets of prev pass
@@ -144,7 +144,7 @@ public class AIS {
 								candidateKItemSetMap.put(hashKey, newItemset);
 							}
 							else {
-								candidate.setSupportCount(candidate.getSupportCount()+1);								
+								candidate.incrementSupportCount();								
 							}
 						}
 						else {
@@ -156,6 +156,8 @@ public class AIS {
 				
 			}
 			
+			// TODO : The support count for every itemset is coming one less than the actual value.
+
 			// Only retain the candidate sets which have the minimum support
 			largeItemsets = Lists.newArrayList();
 			for(ItemSet candidate : candidateKItemSetMap.values()) {
@@ -211,6 +213,6 @@ public class AIS {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.AIS);
+		return new FileReader(dataset, Algorithm.AIS);
 	}
 }

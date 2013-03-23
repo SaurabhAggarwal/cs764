@@ -2,6 +2,7 @@ package util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import model.ItemSet;
 import model.LargeItemset;
@@ -20,12 +21,16 @@ public class AprioriUtils {
 	/*
 	 * Given large itemsets of length (k-1), returns candidate itemsets of length (k).
 	 */
-	public static List<ItemSet> apriori_gen(ItemSet[] allItemsets, List<Integer> largeItemSets, int itemSetSize)
+	public static List<ItemSet> apriori_gen(ItemSet[] allItemsets, List<Integer> largeItemsetIndices, int itemSetSize)
 	{
 		List<ItemSet> candidateItemSets = Lists.newArrayList();
 		List<Integer> items = null;
+
+		List<ItemSet> largeItemsets = getLargeItemsetsFromIndices(allItemsets, largeItemsetIndices);
+		Map<Integer, List<ItemSet>> largeItemsetsMap = MiningUtils.getLargeItemsetMap(largeItemsets);
+
 		int new_cand_index = 0;
-		Integer[] largeItemSetsArray = largeItemSets.toArray(new Integer[largeItemSets.size()]);
+		Integer[] largeItemSetsArray = largeItemsetIndices.toArray(new Integer[largeItemsetIndices.size()]);
 		for(int i = 0; i < largeItemSetsArray.length; i++)
 		{
 			for(int j = i + 1; j < largeItemSetsArray.length; j++) {
@@ -47,7 +52,7 @@ public class AprioriUtils {
 						
 						ItemSet newitemset = new ItemSet(items, 0, largeItemSetsArray[i], largeItemSetsArray[j]);
 						
-						if(prune(allItemsets, largeItemSets, newitemset))
+						if(prune(largeItemsetsMap, newitemset))
 						{
 							newitemset.setIndex(new_cand_index);
 							candidateItemSets.add(newitemset);
@@ -80,25 +85,40 @@ public class AprioriUtils {
 	}
 
 	/*
+	 * Gets the actual large itemsets from the indices.
+	 */
+	private static List<ItemSet> getLargeItemsetsFromIndices(
+			ItemSet[] allItemsets, List<Integer> largeItemsetIndices)
+	{
+		List<ItemSet> largeItemsets = Lists.newArrayList();
+		for(Integer index : largeItemsetIndices) {
+			largeItemsets.add(allItemsets[index]);
+		}
+
+		return largeItemsets;
+	}
+
+	/*
 	 * Returns false if any of the query candidate itemset's (K-1) subset
 	 * does not belong to the list of (K-1) large itemsets.
 	 */
-	private static boolean prune(ItemSet[] allItemsets, List<Integer> largeItemsets, ItemSet query)
+	private static boolean prune(Map<Integer, List<ItemSet>> largeItemsetsMap, ItemSet query)
 	{
 		List<ItemSet> subsets = getSubsets(query);
 			
-		for(ItemSet s : subsets)
-		{
+		for(ItemSet s : subsets) {
 			boolean contains = false;
-			for(Integer index : largeItemsets)
-			{
-				ItemSet itemset = allItemsets[index];
-				if(itemset.equals(s))
-				{
-					contains = true;
-					break;
+			int hashCodeToSearch = s.hashCode();
+			if(largeItemsetsMap.containsKey(hashCodeToSearch)) {
+				List<ItemSet> candidateItemsets = largeItemsetsMap.get(hashCodeToSearch);
+				for(ItemSet itemset : candidateItemsets) {
+					if(itemset.equals(s)) {
+						contains = true;
+						break;
+					}
 				}
 			}
+
 			if(!contains)
 				return false;
 		}
