@@ -8,7 +8,6 @@ import algos.AIS;
 import algos.Apriori;
 import algos.AprioriHybrid;
 import algos.AprioriTid;
-import algos.SETM;
 
 import com.google.common.collect.Maps;
 
@@ -21,16 +20,17 @@ import com.google.common.collect.Maps;
  */
 public class RunAllExperiments {
 
-	// Run each experiment 3 times and then take the average of these # of runs.
-	private static final int NUM_RERUNS = 3;
-
 	public static void main(String[] args) {
 		int experimentRunTime = 0;
+		Dataset[] datasetsToTest = new Dataset[1];
+		datasetsToTest[0] = Dataset.T10_I4_D100K;
+		MinSup[] minSupsToTest = new MinSup[1];
+		minSupsToTest[0] = MinSup.POINT_SEVEN_FIVE_PERCENT;
+
 		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = null;
-		for(Dataset dataset : Dataset.values()) {
+		for(Dataset dataset : datasetsToTest) {
 			algoRunTimeMap = Maps.newTreeMap();
-			for(MinSup minSup : MinSup.values()) {
-				
+			for(MinSup minSup : minSupsToTest) {
 				// AIS
 				experimentRunTime = AIS.runExperiment(dataset, minSup);
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.AIS, minSup, experimentRunTime);
@@ -48,8 +48,8 @@ public class RunAllExperiments {
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
 				
 				// SETM
-				experimentRunTime = SETM.runExperiment(dataset, minSup);
-				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
+				//experimentRunTime = SETM.runExperiment(dataset, minSup);
+				//insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
 			}
 			
 			// Draw the graph for this specific dataset

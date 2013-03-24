@@ -136,6 +136,7 @@ public class AprioriTid {
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
 		long passEndTime = System.currentTimeMillis();
+		System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
 
 		candidateItemsetsCountPerPass.add(candidateItemsets[1].getItemsets().length);
 		candidateItemsetsBarCountPerPass.add(candidateItemsetBars[1].getItemsetbars().size());
