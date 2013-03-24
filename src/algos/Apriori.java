@@ -1,5 +1,7 @@
 package algos;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +13,6 @@ import java.util.TreeSet;
 import model.Algorithm;
 import model.CandidateItemset;
 import model.Dataset;
-import util.DBReader;
 import model.HashTreeNode;
 import model.ItemSet;
 import model.LargeItemset;
@@ -21,6 +22,9 @@ import util.AprioriUtils;
 import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
+import util.OutputUtils;
+
+import com.google.common.collect.Lists;
 
 /**
  * Implements the classical Apriori Algorithm for frequent itemset mining.
@@ -30,6 +34,8 @@ import util.InputReader;
  */
 public class Apriori {
 
+	// The maximum number of itemsets that can be generated in a single pass. This would allow
+	// us to statically allocate this much memory upfront before running the experiment.
 	private static int MAX_K;
 	
 	public static void main(String[] args)
@@ -56,32 +62,72 @@ public class Apriori {
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
 		InputReader reader = getDatasetReader(dataset);
+		File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI, dataset, minSup);
+		File candItemsetsCountFile = OutputUtils.getOutputFile("CANDITEMSETSCOUNT", Algorithm.APRIORI, dataset, minSup);
+		
+		List<Integer> candidateItemsetsCountPerPass = Lists.newArrayList();
+		long fileWriteTime = 0;
 		
 		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
 		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
 		
+		long passStartTime = System.currentTimeMillis();
 		candidateItemsets[1] = new CandidateItemset(MAX_K);
 		largeItemsets[1] = new LargeItemset();
-		
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
+		long passEndTime = System.currentTimeMillis();
+		System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
 		
-		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
-		
+		candidateItemsetsCountPerPass.add(candidateItemsets[1].getItemsets().length);
+		// Write large itemsets to file
+		try {
+			long fileWriteStartTime = System.currentTimeMillis();
+			OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, 1, largeItemsets[1], candidateItemsets[1].getItemsets());
+			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+		} catch (IOException e) {
+			System.err.println("Failed to write to file. Reason : " + e);
+		}
+
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
+			passStartTime = System.currentTimeMillis();
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
-			candidateItemsets[k-1] = null;
-			largeItemsets[k-1] = null; 
-			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
-			//print(largeItemsets[k], candidateItemsets[k].getItemsets());
 
-			AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+			// NULLify the (K-1) itemsets which are not required anymore. This optimisation has been
+			// done to facilitate quick GC for these unused objects.
+			candidateItemsets[k-1] = null;
+			largeItemsets[k-1] = null;
+
+			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
+
+			passEndTime = System.currentTimeMillis();
+			System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
+			// Write large itemsets to file
+			try {
+				long fileWriteStartTime = System.currentTimeMillis();
+				OutputUtils.writeLargeItemsetsToFile(
+					largeItemsetsFile, k, largeItemsets[k], candidateItemsets[k].getItemsets()
+				);
+				fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+			} catch (IOException e) {
+				System.err.println("Failed to write to file. Reason : " + e);
+			}
+
+			candidateItemsetsCountPerPass.add(candidateItemsets[k].getItemsets().length);
 		}
 		
+		try {
+			long fileWriteStartTime = System.currentTimeMillis();
+			OutputUtils.writeCandidateCountToFile(candItemsetsCountFile, candidateItemsetsCountPerPass);
+			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+		} catch (IOException e) {
+			System.err.println("Failed to write candidate itemset count to file. Reason : " + e);
+		}
+
 		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		int timeTaken = (int)((expEndTime - expStartTime - fileWriteTime) / 1000); 
 		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
@@ -97,7 +143,7 @@ public class Apriori {
 			Transaction txn = reader.getNextTransaction();
 			List<ItemSet> candidateSetsInTrans = HashTreeUtils.findItemsets(hashTreeRoot, txn, 0);
 			for(ItemSet c : candidateSetsInTrans) {
-				c.setSupportCount(c.getSupportCount() + 1);
+				c.incrementSupportCount();
 			}
 		}
 		

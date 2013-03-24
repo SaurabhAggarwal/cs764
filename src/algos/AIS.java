@@ -51,14 +51,13 @@ public class AIS {
 	}
 
 	/*
-	 * Returns a map of large itemsets for each pass for the set of transactions.
+	 * Generates the large itemsets for each pass usig AIS algorithm and returns the
+	 * total time taken for the experiment.
 	 * 
 	 * @param dataset      - For which dataset, this experiment has to be run.
 	 * @param minSup       - Minimum desired support threshold
-	 * @param candidateCountMap - Map of pass number and the number of candidate sets generated in 
-	 * 						this pass.
 	 * 
-	 * @returns Map of large itemsets for each pass
+	 * @returns Time taken to generate the large itemsets
 	 */
 	private static int generateLargeItemSets(Dataset dataset, MinSup minSup)
 	{
@@ -80,7 +79,7 @@ public class AIS {
 			try {
 				long fileWriteStartTime = System.currentTimeMillis();
 				Collections.sort(largeItemsets);
-				OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, largeItemsets);
+				OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, currItemsetSize, largeItemsets);
 				fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
 			} catch (IOException e) {
 				System.err.println("Failed to write to file. Reason : " + e);

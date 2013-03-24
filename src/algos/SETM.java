@@ -45,25 +45,9 @@ public class SETM {
 		
 		long expStartTime = System.currentTimeMillis();
 		
-		long largeItemSetGenStart = System.currentTimeMillis();
 		Map<Integer, List<ItemSet>> largeItemSetsMap = getLargeItemSetsMap(dataset, minSup);
-		long largeItemSetGenEnd = System.currentTimeMillis();
-		
-		for(Map.Entry<Integer, List<ItemSet>> entry : largeItemSetsMap.entrySet()) {
-			if(entry.getValue().isEmpty()) {
-				continue;
-			}
-		}
 		
 		long expEndTime = System.currentTimeMillis();
-		/*
-		System.out.println(
-				"Time taken for experiment " + Algorithm.SETM.toString() + "/" + dataset.toString() + 
-				" with support " + minSup.toString() + " % support is " + 
-				(expEndTime - expStartTime)/1000 + " s --> " + " {Large itemset generation : " + 
-				(largeItemSetGenEnd - largeItemSetGenStart)/1000 + " s } "
-		);
-		*/
 		
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
 		System.out.println("Time taken = " + timeTaken + " seconds.\n");

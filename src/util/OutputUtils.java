@@ -11,6 +11,7 @@ import java.util.Map;
 import model.Algorithm;
 import model.Dataset;
 import model.ItemSet;
+import model.LargeItemset;
 import model.MinSup;
 
 /*
@@ -83,15 +84,33 @@ public class OutputUtils {
 			System.err.println("Failed to generate the file location. Reason : " + e);
 		}
 
-		return new File(fileLoc.toString());
+		File file = new File(fileLoc.toString());
+		if(file.exists()) {
+			// Delete the existing file
+			file.delete();
+			
+			// Recreate the file
+			file = new File(fileLoc.toString());
+		}
+		return file;
 	}
 
 	/*
-	 * Populates output file with the large itemsets generated for each pass.
+	 * Populates output file with the large itemsets generated for each pass for non-apriori algos.
 	 */
-	public static void writeLargeItemsetsToFile(File file, List<ItemSet> largeItemsets) throws IOException
+	public static void writeLargeItemsetsToFile(File file, int pass, List<ItemSet> largeItemsets) throws IOException
 	{
+		if(largeItemsets == null || largeItemsets.isEmpty()) {
+			return;
+		}
+
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+		
+		String largeItemsetsStats = 
+				"# Number of large itemsets in pass " + pass + " are " + largeItemsets.size();
+		bw.write(largeItemsetsStats);
+		bw.newLine();
+
 		for(ItemSet itemset : largeItemsets) {
 			if(itemset == null || itemset.getItems() == null || itemset.getItems().isEmpty()) {
 				continue;
@@ -103,7 +122,37 @@ public class OutputUtils {
 
 		bw.close();
 	}
-	
+
+	/*
+	 * Populates output file with the large itemsets generated for each pass for non-apriori algos.
+	 */
+	public static void writeLargeItemsetsToFile(File file, int pass, LargeItemset l, ItemSet[] allItemsets) throws IOException
+	{
+		if(l.getItemsetIds().isEmpty()) {
+			return;
+		}
+
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
+		
+		String largeItemsetsStats = 
+				"# Number of large itemsets in pass " + pass + " are " + l.getItemsetIds().size();
+		bw.write(largeItemsetsStats);
+		bw.newLine();
+
+		for(Integer i : l.getItemsetIds())
+		{
+			StringBuilder printStr = new StringBuilder();
+			for(Integer j : allItemsets[i].getItems())
+				printStr.append(j).append(" ");
+			printStr.append(" - ").append(allItemsets[i].getSupportCount());
+			
+			bw.write(printStr.toString());
+			bw.newLine();
+		}
+
+		bw.close();
+	}
+
 	/*
 	 * Populates output file with the number of candidate itemsets generated for each pass.
 	 */
@@ -113,6 +162,10 @@ public class OutputUtils {
 		
 		int passCounter = 0;
 		for(Integer itemsetsCount : candidateItemsetsCount) {
+			if(itemsetsCount == 0) {
+				continue;
+			}
+
 			++passCounter;
 			bw.write(passCounter + " - " + itemsetsCount);
 			bw.newLine();

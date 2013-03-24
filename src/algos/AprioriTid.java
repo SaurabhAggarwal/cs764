@@ -1,5 +1,7 @@
 package algos;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +10,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import com.google.common.collect.Lists;
 
 import model.Algorithm;
 import model.CandidateItemset;
@@ -19,9 +23,9 @@ import model.Transaction;
 import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.ItemSetBar;
 import util.AprioriUtils;
-import util.DBReader;
 import util.FileReader;
 import util.InputReader;
+import util.OutputUtils;
 
 
 /**
@@ -103,7 +107,14 @@ public class AprioriTid {
 		long expStartTime = System.currentTimeMillis();
 		
 		InputReader reader = getDatasetReader(dataset);
+		File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI_TID, dataset, minSup);
+		File candItemsetsCountFile = OutputUtils.getOutputFile("CANDIDATESETSCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
+		File candItemsetsBarCountFile = OutputUtils.getOutputFile("CANDIDATESETSBARCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
 		
+		List<Integer> candidateItemsetsCountPerPass = Lists.newArrayList();
+		List<Integer> candidateItemsetsBarCountPerPass = Lists.newArrayList();
+		long fileWriteTime = 0;
+
 		List<Transaction> transactions = new ArrayList<Transaction>();
 		
 		while(reader.hasNextTransaction()) {
@@ -112,8 +123,8 @@ public class AprioriTid {
 		
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * transactions.size())/100;
 		MAX_K = 400 * dataset.getAvgTxnSize();
-		//System.out.println(MAX_K);
 		
+		long passStartTime = System.currentTimeMillis();
 		LargeItemset[] largeItemsets = new LargeItemset[MAX_K];
 		CandidateItemset[] candidateItemsets = new CandidateItemset[MAX_K];
 		CandidateItemsetBar[] candidateItemsetBars = new CandidateItemsetBar[MAX_K];
@@ -123,34 +134,68 @@ public class AprioriTid {
 		largeItemsets[1] = new LargeItemset();
 		getInitialCandidateItemsets(transactions, candidateItemsets[1], candidateItemsetBars[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
-		//printAll(candidateItemsets[1].getItemsets());
-		//System.out.println("\nk = " + 1);
-		//AprioriUtils.print(largeItemsets[1], candidateItemsets[1].getItemsets());
+		
+		long passEndTime = System.currentTimeMillis();
+
+		candidateItemsetsCountPerPass.add(candidateItemsets[1].getItemsets().length);
+		candidateItemsetsBarCountPerPass.add(candidateItemsetBars[1].getItemsetbars().size());
+		// Write large itemsets to file
+		try {
+			long fileWriteStartTime = System.currentTimeMillis();
+			OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, 1, largeItemsets[1], candidateItemsets[1].getItemsets());
+			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+		} catch (IOException e) {
+			System.err.println("Failed to write to file. Reason : " + e);
+		}
+
 		long bottleNeckStartTime = 0;
 		long bottleNeckEndTime = 0;
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
-			//System.out.println("\nk = " + k);
-			//System.out.println("1");
+			passStartTime = System.currentTimeMillis();
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
-			//System.out.println("2");
 			
 			if(k == 2)
 				bottleNeckStartTime = System.currentTimeMillis();
 			candidateItemsetBars[k] = generate_C_bar(candidateItemsetBars[k-1], candidateItemsets[k-1].getItemsets(), candidateItemsets[k]);
 			if(k == 2)
 				bottleNeckEndTime = System.currentTimeMillis();
-			//System.out.println("3");
+
 			candidateItemsetBars[k-1] = null;
 			candidateItemsets[k-1] = null;
 			largeItemsets[k-1] = null; 
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
-			//AprioriUtils.print(largeItemsets[k], candidateItemsets[k].getItemsets());
+	
+			passEndTime = System.currentTimeMillis();
+			System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
+
+			// Write large itemsets to file
+			try {
+				long fileWriteStartTime = System.currentTimeMillis();
+				OutputUtils.writeLargeItemsetsToFile(
+					largeItemsetsFile, k, largeItemsets[k], candidateItemsets[k].getItemsets()
+				);
+				fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+			} catch (IOException e) {
+				System.err.println("Failed to write to file. Reason : " + e);
+			}
+
+			candidateItemsetsCountPerPass.add(candidateItemsets[k].getItemsets().length);
+			candidateItemsetsBarCountPerPass.add(candidateItemsetBars[k].getItemsetbars().size());
 		}
 		
+		try {
+			long fileWriteStartTime = System.currentTimeMillis();
+			OutputUtils.writeCandidateCountToFile(candItemsetsCountFile, candidateItemsetsCountPerPass);
+			OutputUtils.writeCandidateCountToFile(candItemsetsBarCountFile, candidateItemsetsBarCountPerPass);
+			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+		} catch (IOException e) {
+			System.err.println("Failed to write candidate itemset count to file. Reason : " + e);
+		}
+
 		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		int timeTaken = (int)((expEndTime - expStartTime - fileWriteTime) / 1000); 
 		System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.");
 		System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		

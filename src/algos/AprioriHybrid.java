@@ -19,7 +19,6 @@ import model.Transaction;
 import model.aprioritid.CandidateItemsetBar;
 import model.aprioritid.ItemSetBar;
 import util.AprioriUtils;
-import util.DBReader;
 import util.FileReader;
 import util.HashTreeUtils;
 import util.InputReader;
