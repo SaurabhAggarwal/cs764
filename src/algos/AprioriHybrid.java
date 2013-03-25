@@ -48,25 +48,6 @@ public class AprioriHybrid {
 	{
 		return Runtime.getRuntime().freeMemory();
 	}
-	
-	private static long getEstimateSizeCBar(long numTransactions, CandidateItemset candidateItemsets)
-	{
-		long memoryUsage = numTransactions;
-		
-		int sumSupport = 0;
-		
-		for(ItemSet itemset : candidateItemsets.getItemsets())
-		{
-			if(itemset == null)
-				break;
-			sumSupport += itemset.getSupportCount();
-		}
-		
-		if(sumSupport > 0)
-			memoryUsage += (sumSupport * MemoryUtil.deepMemoryUsageOf(candidateItemsets.getItemsets()[0]));
-		
-		return memoryUsage;
-	}
 
 	/*
 	 * Run Apriori algorithm for the specified experiment parameters.
@@ -132,7 +113,7 @@ public class AprioriHybrid {
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
 			largeItemsets[k-1] = null; 
 			
-			long estimateSizeCBar = getEstimateSizeCBar(dataset.getNumTxns(), candidateItemsets[k]);
+			long estimateSizeCBar = AprioriUtils.getEstimateSizeCBar(dataset.getNumTxns(), candidateItemsets[k]);
 			long freeMemory = getFreeMemory();
 			
 			if((!switch_to_aprioritid) && (estimateSizeCBar < freeMemory))
