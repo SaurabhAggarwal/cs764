@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import model.CandidateItemset;
 import model.ItemSet;
 import model.LargeItemset;
 
 import com.google.common.collect.Lists;
+import com.javamex.classmexer.MemoryUtil;
 
 /**
  * Common functions used by all Apriori-based Algorithms
@@ -141,6 +143,26 @@ public class AprioriUtils {
 		}
 
 		return subsets;
+	}
+	
+	public static long getEstimateSizeCBar(long numTransactions, CandidateItemset candidateItemsets)
+	{
+		long memoryUsage = numTransactions;
+		
+		int sumSupport = 0;
+		
+		for(ItemSet itemset : candidateItemsets.getItemsets())
+		{
+			if(itemset == null)
+				break;
+			sumSupport += itemset.getSupportCount();
+		}
+		
+		//Multiply sumSupport with size of 1 itemset.
+		if(sumSupport > 0)
+			memoryUsage += (sumSupport * MemoryUtil.deepMemoryUsageOf(candidateItemsets.getItemsets()[0]));
+		
+		return memoryUsage;
 	}
 	
 	public static void print(LargeItemset l, ItemSet[] allItemsets)
