@@ -12,8 +12,11 @@ import model.MinSup;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -41,10 +44,10 @@ public class GraphUtils{
 		String chartTitle = dataset.toString();
 		chartTitle = chartTitle.replace("_", ".");
 		XYDataset graphDataset = createGraphDataset(algoRunTimeMap, dataset);
-		JFreeChart chart = createChart(graphDataset, chartTitle);
+		JFreeChart chart = createMinSupChart(graphDataset, chartTitle, "Minimum Support(%)", "Time(sec)");
 		
 		try {
-			String fileLoc = new File(".").getCanonicalPath() + "/graphs/" + dataset.toString() + ".png";
+			String fileLoc = new File(".").getCanonicalPath() + "/graphs/" + chartTitle + ".png";
 			System.out.println("Adding chart for dataset : " + dataset.toString() + " at " + fileLoc);
 			File chartFile = new File(fileLoc);
 			ChartUtilities.saveChartAsPNG(chartFile, chart, 870, 700);
@@ -55,6 +58,25 @@ public class GraphUtils{
 		}
 	}
 	
+	public static void drawPerPassGraph(
+			Map<String, Map<Integer, Integer>> algoPerPassRunStatsMap, String chartTitle,
+			String xaxisTitle, String yaxisTitle, boolean isYAxisLogScale)
+	{
+		XYDataset graphDataset = createPerPassGraphDataset(algoPerPassRunStatsMap, isYAxisLogScale);
+		JFreeChart chart = createPerPassChart(graphDataset, chartTitle, xaxisTitle, yaxisTitle);
+		
+		try {
+			String fileLoc = new File(".").getCanonicalPath() + "/graphs/" + chartTitle + ".png";
+			System.out.println("Adding chart : " + chartTitle + " at " + fileLoc);
+			File chartFile = new File(fileLoc);
+			ChartUtilities.saveChartAsPNG(chartFile, chart, 870, 700);
+		} catch (IOException e) {
+			System.out.println(
+				"Chart creation failed for : " + chartTitle + ". Reason : " + e 
+			);
+		}
+	}
+
 	/*
 	 * Creates the dataset in the format expected by JFreeCharts from the input parameters.
 	 */
@@ -78,25 +100,78 @@ public class GraphUtils{
 	}
 	
 	/*
+	 * Creates a dataset that contains the per pass execution stats of various algorithms. These
+	 * stats can be - number of itemsets generated in each pass or the execution time for each pass.
+	 */
+	private static XYSeriesCollection createPerPassGraphDataset(
+			Map<String, Map<Integer, Integer>> algoPerPassStatsMap, boolean isYAxisLogScale)
+	{
+		XYSeriesCollection graphDataset = new XYSeriesCollection();
+		for(Map.Entry<String, Map<Integer, Integer>> entry : algoPerPassStatsMap.entrySet()) {
+			String algo = entry.getKey();
+			XYSeries algoSeriesName = new XYSeries(algo.toString());
+			for(Map.Entry<Integer, Integer> entry2 : entry.getValue().entrySet()) {
+				int passNum = entry2.getKey();
+				int passStat = entry2.getValue();
+				
+				if(passStat != 0 && isYAxisLogScale) {
+					algoSeriesName.add(passNum, Math.log10(passStat));
+				}
+				else {
+					algoSeriesName.add(passNum, passStat);	
+				}
+				
+			}
+			
+			graphDataset.addSeries(algoSeriesName);
+		}
+
+		return graphDataset;
+	}
+
+	private static JFreeChart createPerPassChart(XYDataset dataset, String title, String xaxisLabel, String yaxisLabel)
+	{
+		JFreeChart chart = createChart(dataset, title, xaxisLabel, yaxisLabel);
+		
+		XYPlot plot = chart.getXYPlot();
+		NumberAxis xaxis = (NumberAxis) plot.getDomainAxis();
+		xaxis.setTickUnit(new NumberTickUnit(1));
+		xaxis.setLowerBound(1);
+		plot.setDomainAxis(xaxis);
+
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+		renderer.setBaseShapesVisible(true);
+
+		return chart;
+	}
+
+	private static JFreeChart createMinSupChart(XYDataset dataset, String title, String xaxisLabel, String yaxisLabel)
+	{
+		JFreeChart chart = createChart(dataset, title, xaxisLabel, yaxisLabel);
+
+        // We want values of higher minimum support percentages to be shown first, in
+        // accordance with the graphs in the paper.
+		chart.getXYPlot().getDomainAxis().setInverted(true);
+
+		return chart;
+	}
+
+	/*
 	 * Configure the various chart options here.
 	 */
-	private static JFreeChart createChart(XYDataset dataset, String title)
+	private static JFreeChart createChart(XYDataset dataset, String title, String xaxisLabel, String yaxisLabel)
 	{
         // create the chart...
         final JFreeChart chart = ChartFactory.createXYLineChart(
             title,      // chart title
-            "Minimum Support(%)",     // x axis label
-            "Time (sec)",             // y axis label
+            xaxisLabel,     // x axis label
+            yaxisLabel,             // y axis label
             dataset,                  // data
             PlotOrientation.VERTICAL,
             true,                     // include legend
             true,                     // tooltips
             false                     // urls
         );
-
-        // We want values of higher minimum support percentages to be shown first, in
-        // accordance with the graphs in the paper.
-        chart.getXYPlot().getDomainAxis().setInverted(true);
 
         // We wanted the colours to be a bit darker. So, that is why explicitly setting the
         // series colours here.

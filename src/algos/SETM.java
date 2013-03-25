@@ -90,8 +90,8 @@ public class SETM {
 		// a unique identifier at the end of temporary tables to avoid dropping the tables but then
 		// the code would need to do extra book-keeping to remember the names of the tables. Decided
 		// against it but might revisit if this looks like a potential problem.
-		boolean areTempTablesDropped = DBUtils.dropTempTables(itemsetSize);
-		System.out.println("Temp tables dropped ? " + areTempTablesDropped);
+		//boolean areTempTablesDropped = DBUtils.dropTempTables(itemsetSize);
+		//System.out.println("Temp tables dropped ? " + areTempTablesDropped);
 
 		return largeItemsetsMap;
 	}

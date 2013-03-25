@@ -8,6 +8,7 @@ import algos.AIS;
 import algos.Apriori;
 import algos.AprioriHybrid;
 import algos.AprioriTid;
+import algos.SETM;
 
 import com.google.common.collect.Maps;
 
@@ -48,8 +49,8 @@ public class RunAllExperiments {
 				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.APRIORI_HYBRID, minSup, experimentRunTime);
 				
 				// SETM
-				//experimentRunTime = SETM.runExperiment(dataset, minSup);
-				//insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
+				experimentRunTime = SETM.runExperiment(dataset, minSup);
+				insertIntoAlgoRunTimeMap(algoRunTimeMap, Algorithm.SETM, minSup, experimentRunTime);
 			}
 			
 			// Draw the graph for this specific dataset
