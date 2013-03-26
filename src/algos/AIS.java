@@ -30,7 +30,7 @@ public class AIS {
 
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T10_I4_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 
 	/*
@@ -74,7 +74,7 @@ public class AIS {
 		List<ItemSet> largeItemsets = MiningUtils.getInitialLargeItemsets(reader, minSupportCount);
 
 		int currItemsetSize = 1;
-	
+		
 		while(!largeItemsets.isEmpty()) {
 			// Write large itemsets to file
 			try {

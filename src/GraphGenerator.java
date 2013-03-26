@@ -55,7 +55,6 @@ public class GraphGenerator {
 		largeItemsetsMap.put(5, 0);
 
 		Map<Integer, Integer> candAprioriAndTID = Maps.newHashMap();
-		candAprioriAndTID.put(1, 4000);
 		candAprioriAndTID.put(2, 101926);
 		candAprioriAndTID.put(3, 24);
 		candAprioriAndTID.put(4, 6);
@@ -63,24 +62,25 @@ public class GraphGenerator {
 		candAprioriAndTID.put(6, 0);
 
 		Map<Integer, Integer> candAISSETMMap = Maps.newHashMap();
-		candAISSETMMap.put(1, 176764);
-		candAISSETMMap.put(2, 22459);
-		candAISSETMMap.put(3, 2089);
-		candAISSETMMap.put(4, 293);
-		candAISSETMMap.put(5, 0);
+		candAISSETMMap.put(2, 176764);
+		candAISSETMMap.put(3, 22459);
+		candAISSETMMap.put(4, 2089);
+		candAISSETMMap.put(5, 293);
+		candAISSETMMap.put(6, 0);
 
 		Map<Integer, Integer> candBarAprioriTID = Maps.newHashMap();
-		candBarAprioriTID.put(1, 98062);
-		candBarAprioriTID.put(2, 5953);
-		candBarAprioriTID.put(3, 1624);
-		candBarAprioriTID.put(4, 707);
-		candBarAprioriTID.put(5, 0);
+		candBarAprioriTID.put(2, 3990440);
+		candBarAprioriTID.put(3, 17629);
+		candBarAprioriTID.put(4, 4456);
+		candBarAprioriTID.put(5, 707);
+		candBarAprioriTID.put(6, 0);
 
 		Map<Integer, Integer> candBarSETM = Maps.newHashMap();
 		candBarSETM.put(2, 5213187);
 		candBarSETM.put(3, 274419);
 		candBarSETM.put(4, 21011);
 		candBarSETM.put(5, 2742);
+		candBarSETM.put(6, 0);
 		
 		itemsetsSizeMap.put("L-k", largeItemsetsMap);
 		itemsetsSizeMap.put("C-k(Apriori, AprioriTid)", candAprioriAndTID);

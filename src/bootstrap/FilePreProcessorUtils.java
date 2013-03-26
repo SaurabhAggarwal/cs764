@@ -20,10 +20,10 @@ import com.google.common.collect.Maps;
  */
 public class FilePreProcessorUtils {
 
-	private static String inputFileLoc = "/home/shishir/DMProject/resources/synthetic_data_generator/T5.I2.D10000K.raw";//args[0]; // Complete source file path as input
-	private static String outputFileLoc = "/home/shishir/workspace/DMProject/data/T5.I2.D10000K"; //args[1]; // Complete destination file path as input
+	private static String inputFileLoc = "/home/shishir/DMProject/resources/synthetic_data_generator/T20.I6.D10000K.raw";//args[0]; // Complete source file path as input
+	private static String outputFileLoc = "/home/shishir/workspace/DMProject/data/T20.I6.D10000K"; //args[1]; // Complete destination file path as input
 
-	private static int batchWriteThreshold = 5000;
+	private static int batchWriteThreshold = 10000;
 	
 	public static void main(String[] args) throws IOException{
 		readAndBatchWriteTxnLines(inputFileLoc);
