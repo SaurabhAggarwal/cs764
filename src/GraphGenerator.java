@@ -22,6 +22,7 @@ public class GraphGenerator {
 	private static MinSup minSupToTest = MinSup.POINT_SEVEN_FIVE_PERCENT;
 	
 	public static void main(String[] args) {
+		/*
 		GraphUtils.drawPerPassGraph(
 			genPerPassExecutionTimeGraph(), 
 			"Apriori vs AprioriTID ( " + datasetToTest.toString() + "_" + minSupToTest.getMinSupPercentage() + " )", 
@@ -35,8 +36,96 @@ public class GraphGenerator {
 			"Pass#", "Number of Itemsets",
 			true
 		);
+		*/
+		
+		//GraphUtils.drawGraph(genAISvsAprioriGraphT5I2D100K(), Dataset.T5_I2_D100K);
+		//GraphUtils.drawGraph(genAISvsAprioriGraphT10I2D100K(), Dataset.T10_I2_D100K);
+		GraphUtils.drawGraph(genAISvsAprioriGraphT10I4D100K(), Dataset.T10_I4_D100K);
 	}
 
+	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsAprioriGraphT10I4D100K()
+	{
+		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = Maps.newTreeMap();
+		
+		// T5.I2.D100K dataset
+		Map<MinSup, Integer> aisRunMap = Maps.newHashMap();
+		aisRunMap.put(MinSup.TWO_PERCENT, 38);
+		aisRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 46);
+		aisRunMap.put(MinSup.ONE_PERCENT, 63);
+		aisRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 103);
+		aisRunMap.put(MinSup.POINT_FIVE_PERCENT, 261);
+		aisRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 388);
+		aisRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 545);
+		algoRunTimeMap.put(Algorithm.AIS, aisRunMap);
+		
+		Map<MinSup, Integer> aprioriRunMap = Maps.newHashMap();
+		aprioriRunMap.put(MinSup.TWO_PERCENT, 30);
+		aprioriRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 32);
+		aprioriRunMap.put(MinSup.ONE_PERCENT, 48);
+		aprioriRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 78);
+		aprioriRunMap.put(MinSup.POINT_FIVE_PERCENT, 154);
+		aprioriRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 155);
+		aprioriRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 157);
+		algoRunTimeMap.put(Algorithm.APRIORI, aprioriRunMap);
+		
+		return algoRunTimeMap;
+	}
+
+	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsAprioriGraphT10I2D100K()
+	{
+		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = Maps.newTreeMap();
+		
+		// T5.I2.D100K dataset
+		Map<MinSup, Integer> aisRunMap = Maps.newHashMap();
+		aisRunMap.put(MinSup.TWO_PERCENT, 54);
+		aisRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 75);
+		aisRunMap.put(MinSup.ONE_PERCENT, 100);
+		aisRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 112);
+		aisRunMap.put(MinSup.POINT_FIVE_PERCENT, 164);
+		aisRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 179);
+		aisRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 232);
+		algoRunTimeMap.put(Algorithm.AIS, aisRunMap);
+		
+		Map<MinSup, Integer> aprioriRunMap = Maps.newHashMap();
+		aprioriRunMap.put(MinSup.TWO_PERCENT, 46);
+		aprioriRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 64);
+		aprioriRunMap.put(MinSup.ONE_PERCENT, 78);
+		aprioriRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 80);
+		aprioriRunMap.put(MinSup.POINT_FIVE_PERCENT, 113);
+		aprioriRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 114);
+		aprioriRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 118);
+		algoRunTimeMap.put(Algorithm.APRIORI, aprioriRunMap);
+		
+		return algoRunTimeMap;
+	}
+
+	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsAprioriGraphT5I2D100K()
+	{
+		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = Maps.newTreeMap();
+		
+		// T5.I2.D100K dataset
+		Map<MinSup, Integer> aisRunMap = Maps.newHashMap();
+		aisRunMap.put(MinSup.TWO_PERCENT, 34);
+		aisRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 32);
+		aisRunMap.put(MinSup.ONE_PERCENT, 42);
+		aisRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 55);
+		aisRunMap.put(MinSup.POINT_FIVE_PERCENT, 72);
+		aisRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 85);
+		aisRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 119);
+		algoRunTimeMap.put(Algorithm.AIS, aisRunMap);
+		
+		Map<MinSup, Integer> aprioriRunMap = Maps.newHashMap();
+		aprioriRunMap.put(MinSup.TWO_PERCENT, 31);
+		aprioriRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 28);
+		aprioriRunMap.put(MinSup.ONE_PERCENT, 35);
+		aprioriRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 47);
+		aprioriRunMap.put(MinSup.POINT_FIVE_PERCENT, 59);
+		aprioriRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 60);
+		aprioriRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 83);
+		algoRunTimeMap.put(Algorithm.APRIORI, aprioriRunMap);
+		
+		return algoRunTimeMap;
+	}
 	/*
 	 * Generates a graph to show the relative sizes of the itemsets generated during the
 	 * experiment run for various algorithms.
