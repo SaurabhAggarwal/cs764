@@ -40,7 +40,65 @@ public class GraphGenerator {
 		
 		//GraphUtils.drawGraph(genAISvsAprioriGraphT5I2D100K(), Dataset.T5_I2_D100K);
 		//GraphUtils.drawGraph(genAISvsAprioriGraphT10I2D100K(), Dataset.T10_I2_D100K);
-		GraphUtils.drawGraph(genAISvsAprioriGraphT10I4D100K(), Dataset.T10_I4_D100K);
+		//GraphUtils.drawGraph(genAISvsAprioriGraphT10I4D100K(), Dataset.T10_I4_D100K);
+		//GraphUtils.drawGraph(genAISvsSETMGraphT5I2D100K(), Dataset.T5_I2_D100K);
+		GraphUtils.drawGraph(genAISvsSETMGraphT10I4D100K(), Dataset.T10_I4_D100K);
+	}
+
+	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsSETMGraphT10I4D100K()
+	{
+		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = Maps.newTreeMap();
+		
+		// T5.I2.D100K dataset
+		Map<MinSup, Integer> aisRunMap = Maps.newHashMap();
+		aisRunMap.put(MinSup.TWO_PERCENT, 49);
+		aisRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 56);
+		aisRunMap.put(MinSup.ONE_PERCENT, 79);
+		aisRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 112);
+		aisRunMap.put(MinSup.POINT_FIVE_PERCENT, 291);
+		aisRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 400);
+		aisRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 582);
+		algoRunTimeMap.put(Algorithm.AIS, aisRunMap);
+
+		Map<MinSup, Integer> setmRunMap = Maps.newHashMap();
+		setmRunMap.put(MinSup.TWO_PERCENT, 90);
+		setmRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 98);
+		setmRunMap.put(MinSup.ONE_PERCENT, 103);
+		setmRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 137);
+		setmRunMap.put(MinSup.POINT_FIVE_PERCENT,500);
+		setmRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 1482);
+		setmRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 2675);
+		algoRunTimeMap.put(Algorithm.SETM, setmRunMap);
+		
+		return algoRunTimeMap;
+	}
+
+	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsSETMGraphT5I2D100K()
+	{
+		Map<Algorithm, Map<MinSup, Integer>> algoRunTimeMap = Maps.newTreeMap();
+		
+		// T5.I2.D100K dataset
+		Map<MinSup, Integer> aisRunMap = Maps.newHashMap();
+		aisRunMap.put(MinSup.TWO_PERCENT, 27);
+		aisRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 28);
+		aisRunMap.put(MinSup.ONE_PERCENT, 41);
+		aisRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 64);
+		aisRunMap.put(MinSup.POINT_FIVE_PERCENT, 71);
+		aisRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 80);
+		aisRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 114);
+		algoRunTimeMap.put(Algorithm.AIS, aisRunMap);
+
+		Map<MinSup, Integer> setmRunMap = Maps.newHashMap();
+		setmRunMap.put(MinSup.TWO_PERCENT, 22);
+		setmRunMap.put(MinSup.ONE_POINT_FIVE_PERCENT, 23);
+		setmRunMap.put(MinSup.ONE_PERCENT, 24);
+		setmRunMap.put(MinSup.POINT_SEVEN_FIVE_PERCENT, 28);
+		setmRunMap.put(MinSup.POINT_FIVE_PERCENT,34);
+		setmRunMap.put(MinSup.POINT_THREE_THREE_PERCENT, 52);
+		setmRunMap.put(MinSup.POINT_TWO_FIVE_PERCENT, 75);
+		algoRunTimeMap.put(Algorithm.SETM, setmRunMap);
+		
+		return algoRunTimeMap;
 	}
 
 	private static Map<Algorithm, Map<MinSup, Integer>> genAISvsAprioriGraphT10I4D100K()
