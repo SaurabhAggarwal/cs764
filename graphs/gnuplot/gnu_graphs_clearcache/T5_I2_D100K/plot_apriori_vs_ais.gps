@@ -1,0 +1,6 @@
+set terminal jpeg
+set output 'apriori_vs_ais.jpg'
+set xrange [:] reverse
+set xlabel "Minimum Support"
+set ylabel "Time (seconds)"
+plot "Apriori" with linespoints, "AIS" with linespoints

@@ -41,7 +41,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		//runExperiment(Dataset.T10_I4_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 
 	/*
@@ -54,7 +54,7 @@ public class Apriori {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
-		System.out.println("Apriori: " + dataset + ", " + minSup);
+		//System.out.println("Apriori: " + dataset + ", " + minSup);
 		
 		long expStartTime = System.currentTimeMillis();
 		
@@ -63,8 +63,8 @@ public class Apriori {
 		int minSupportCount = (int)(minSup.getMinSupPercentage() * dataset.getNumTxns())/100;
 		
 		InputReader reader = getDatasetReader(dataset);
-		File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI, dataset, minSup);
-		File candItemsetsCountFile = OutputUtils.getOutputFile("CANDITEMSETSCOUNT", Algorithm.APRIORI, dataset, minSup);
+		//File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI, dataset, minSup);
+		//File candItemsetsCountFile = OutputUtils.getOutputFile("CANDITEMSETSCOUNT", Algorithm.APRIORI, dataset, minSup);
 		
 		List<Integer> candidateItemsetsCountPerPass = Lists.newArrayList();
 		long fileWriteTime = 0;
@@ -77,11 +77,13 @@ public class Apriori {
 		largeItemsets[1] = new LargeItemset();
 		getInitialCandidateItemsets(reader, candidateItemsets[1]);
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
+		//System.out.println("##" + largeItemsets[1].getItemsetIds().size());
 		long passEndTime = System.currentTimeMillis();
-		System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
+		//System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
 		
 		candidateItemsetsCountPerPass.add(candidateItemsets[1].getItemsets().length);
 		// Write large itemsets to file
+		/*
 		try {
 			long fileWriteStartTime = System.currentTimeMillis();
 			OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, 1, largeItemsets[1], candidateItemsets[1].getItemsets());
@@ -89,9 +91,11 @@ public class Apriori {
 		} catch (IOException e) {
 			System.err.println("Failed to write to file. Reason : " + e);
 		}
+		*/
 
 		for(int k = 2; largeItemsets[k-1].getItemsetIds().size() != 0; k++)
 		{
+			System.out.println(k);
 			passStartTime = System.currentTimeMillis();
 			candidateItemsets[k] = new CandidateItemset(MAX_K);
 			candidateItemsets[k].setItemsets(AprioriUtils.apriori_gen(candidateItemsets[k-1].getItemsets(), largeItemsets[k-1].getItemsetIds(), k - 1));
@@ -100,12 +104,13 @@ public class Apriori {
 			// done to facilitate quick GC for these unused objects.
 			candidateItemsets[k-1] = null;
 			largeItemsets[k-1] = null;
-
+			
 			largeItemsets[k] = generateLargeItemsets(getDatasetReader(dataset), candidateItemsets[k], minSupportCount, k);
 
 			passEndTime = System.currentTimeMillis();
-			System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
+			//System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
 			// Write large itemsets to file
+			/*
 			try {
 				long fileWriteStartTime = System.currentTimeMillis();
 				OutputUtils.writeLargeItemsetsToFile(
@@ -115,10 +120,11 @@ public class Apriori {
 			} catch (IOException e) {
 				System.err.println("Failed to write to file. Reason : " + e);
 			}
+			*/
 
 			candidateItemsetsCountPerPass.add(candidateItemsets[k].getItemsets().length);
 		}
-		
+		/*
 		try {
 			long fileWriteStartTime = System.currentTimeMillis();
 			OutputUtils.writeCandidateCountToFile(candItemsetsCountFile, candidateItemsetsCountPerPass);
@@ -126,10 +132,11 @@ public class Apriori {
 		} catch (IOException e) {
 			System.err.println("Failed to write candidate itemset count to file. Reason : " + e);
 		}
-
+		*/
+		
 		long expEndTime = System.currentTimeMillis();
 		int timeTaken = (int)((expEndTime - expStartTime - fileWriteTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.\n");
+		//System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}
@@ -218,6 +225,6 @@ public class Apriori {
 	 */
 	private static InputReader getDatasetReader(Dataset dataset)
 	{
-		return new DBReader(dataset, Algorithm.APRIORI);
+		return new FileReader(dataset, Algorithm.APRIORI);
 	}
 }

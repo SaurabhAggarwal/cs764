@@ -28,7 +28,7 @@ public class SETM {
 
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		//runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 
 	/*
@@ -41,7 +41,7 @@ public class SETM {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup) {
 		
-		System.out.println("SETM: " + dataset + ", " + minSup);
+		//System.out.println("SETM: " + dataset + ", " + minSup);
 		
 		long expStartTime = System.currentTimeMillis();
 		
@@ -50,7 +50,7 @@ public class SETM {
 		long expEndTime = System.currentTimeMillis();
 		
 		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
-		System.out.println("Time taken = " + timeTaken + " seconds.\n");
+		//System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 
 		try {
@@ -91,7 +91,7 @@ public class SETM {
 		// the code would need to do extra book-keeping to remember the names of the tables. Decided
 		// against it but might revisit if this looks like a potential problem.
 		boolean areTempTablesDropped = DBUtils.dropTempTables(itemsetSize);
-		System.out.println("Temp tables dropped ? " + areTempTablesDropped);
+		//System.out.println("Temp tables dropped ? " + areTempTablesDropped);
 
 		return largeItemsetsMap;
 	}

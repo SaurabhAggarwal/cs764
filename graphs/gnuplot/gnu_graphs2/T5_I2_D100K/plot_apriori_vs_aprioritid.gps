@@ -1,0 +1,4 @@
+set terminal jpeg
+set output 'apriori_vs_aprioritid.jpg'
+set xrange [:] reverse
+plot "Apriori_T5_I2_D100K.gnu" with lines, "AprioriTid_T5_I2_D100K.gnu" with lines

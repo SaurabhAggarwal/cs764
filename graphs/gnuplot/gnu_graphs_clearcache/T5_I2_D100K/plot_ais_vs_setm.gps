@@ -1,0 +1,4 @@
+set terminal jpeg
+set output 'ais_vs_setm.jpg'
+set xrange [:] reverse
+plot "SETM_T5_I2_D100K.gnu" with lines, "AIS_T5_I2_D100K.gnu" with lines

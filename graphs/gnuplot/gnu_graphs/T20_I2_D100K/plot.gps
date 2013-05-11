@@ -1,0 +1,4 @@
+set terminal jpeg
+set output 'graph.jpg'
+set xrange [:] reverse
+plot "SETM_T20_I2_D100K.gnu" with lines, "AIS_T20_I2_D100K.gnu" with lines, "Apriori_T20_I2_D100K.gnu" with lines, "AprioriTid_T20_I2_D100K.gnu" with lines, "AprioriHybrid_T20_I2_D100K.gnu" with lines

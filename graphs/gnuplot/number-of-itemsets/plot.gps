@@ -1,0 +1,6 @@
+set terminal jpeg
+set output 'graph.jpg'
+set logscale y
+set xlabel "Pass Number"
+set ylabel "Number of Itemsets"
+plot "L-k" with linespoints, "C-k(Apriori, AprioriTid)" with linespoints, "C-k(AIS, SETM)" with linespoints, "C-k-m (AprioriTid)" with linespoints, "C-k-m (SETM)" with linespoints

@@ -33,6 +33,8 @@ public class AprioriUtils {
 
 		int new_cand_index = 0;
 		Integer[] largeItemSetsArray = largeItemsetIndices.toArray(new Integer[largeItemsetIndices.size()]);
+		//System.out.println("#############" + largeItemSetsArray.length);
+		int count = 0;
 		for(int i = 0; i < largeItemSetsArray.length; i++)
 		{
 			for(int j = i + 1; j < largeItemSetsArray.length; j++) {
@@ -78,10 +80,12 @@ public class AprioriUtils {
 						allItemsets[largeItemSetsArray[i]].addExtension(new_cand_index);
 						allItemsets[largeItemSetsArray[j]].addExtension(new_cand_index);
 						new_cand_index++;
+						count++;
 					}
 				}
 			}
 		}
+		//System.out.println("#############" + count);
 		
 		return candidateItemSets;
 	}

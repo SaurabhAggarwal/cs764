@@ -42,7 +42,7 @@ public class AprioriTid {
 	
 	public static void main(String[] args)
 	{
-		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		//runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 	/* 
@@ -103,18 +103,18 @@ public class AprioriTid {
 	 */
 	public static int runExperiment(Dataset dataset, MinSup minSup)
 	{
-		System.out.println("AprioriTid: " + dataset + ", " + minSup);
+		//System.out.println("AprioriTid: " + dataset + ", " + minSup);
 		
 		long expStartTime = System.currentTimeMillis();
 		
 		InputReader reader = getDatasetReader(dataset);
-		File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI_TID, dataset, minSup);
-		File candItemsetsCountFile = OutputUtils.getOutputFile("CANDIDATESETSCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
-		File candItemsetsBarCountFile = OutputUtils.getOutputFile("CANDIDATESETSBARCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
+		//File largeItemsetsFile = OutputUtils.getOutputFile("LARGEITEMSETS", Algorithm.APRIORI_TID, dataset, minSup);
+		//File candItemsetsCountFile = OutputUtils.getOutputFile("CANDIDATESETSCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
+		//File candItemsetsBarCountFile = OutputUtils.getOutputFile("CANDIDATESETSBARCOUNT", Algorithm.APRIORI_TID, dataset, minSup);
 		
 		List<Integer> candidateItemsetsCountPerPass = Lists.newArrayList();
 		List<Integer> candidateItemsetsBarCountPerPass = Lists.newArrayList();
-		long fileWriteTime = 0;
+		//long fileWriteTime = 0;
 
 		List<Transaction> transactions = new ArrayList<Transaction>();
 		
@@ -137,18 +137,20 @@ public class AprioriTid {
 		getInitialLargeItemsets(candidateItemsets[1], minSupportCount, largeItemsets[1]);
 		
 		long passEndTime = System.currentTimeMillis();
-		System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
+		//System.out.println("Time for pass#1 : " + (passEndTime - passStartTime)/1000 + " s .");
 
 		candidateItemsetsCountPerPass.add(candidateItemsets[1].getItemsets().length);
 		candidateItemsetsBarCountPerPass.add(candidateItemsetBars[1].getItemsetbars().size());
 		// Write large itemsets to file
+		/*
 		try {
 			long fileWriteStartTime = System.currentTimeMillis();
-			OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, 1, largeItemsets[1], candidateItemsets[1].getItemsets());
-			fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+			//OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, 1, largeItemsets[1], candidateItemsets[1].getItemsets());
+			//fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
 		} catch (IOException e) {
 			System.err.println("Failed to write to file. Reason : " + e);
 		}
+		*/
 
 		long bottleNeckStartTime = 0;
 		long bottleNeckEndTime = 0;
@@ -170,23 +172,23 @@ public class AprioriTid {
 			largeItemsets[k] = generateLargeItemsets(candidateItemsets[k], minSupportCount);
 	
 			passEndTime = System.currentTimeMillis();
-			System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
+			//System.out.println("Time for pass#" + k + " : " + (passEndTime - passStartTime)/1000 + " s .");
 
 			// Write large itemsets to file
+			/*
 			try {
 				long fileWriteStartTime = System.currentTimeMillis();
-				OutputUtils.writeLargeItemsetsToFile(
-					largeItemsetsFile, k, largeItemsets[k], candidateItemsets[k].getItemsets()
-				);
-				fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
+				//OutputUtils.writeLargeItemsetsToFile(largeItemsetsFile, k, largeItemsets[k], candidateItemsets[k].getItemsets());
+				//fileWriteTime += System.currentTimeMillis() - fileWriteStartTime;
 			} catch (IOException e) {
 				System.err.println("Failed to write to file. Reason : " + e);
 			}
+			*/
 
 			candidateItemsetsCountPerPass.add(candidateItemsets[k].getItemsets().length);
 			candidateItemsetsBarCountPerPass.add(candidateItemsetBars[k].getItemsetbars().size());
 		}
-		
+		/*
 		try {
 			long fileWriteStartTime = System.currentTimeMillis();
 			OutputUtils.writeCandidateCountToFile(candItemsetsCountFile, candidateItemsetsCountPerPass);
@@ -195,11 +197,11 @@ public class AprioriTid {
 		} catch (IOException e) {
 			System.err.println("Failed to write candidate itemset count to file. Reason : " + e);
 		}
-
+		*/
 		long expEndTime = System.currentTimeMillis();
-		int timeTaken = (int)((expEndTime - expStartTime - fileWriteTime) / 1000); 
-		System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.");
-		System.out.println("Time taken = " + timeTaken + " seconds.\n");
+		int timeTaken = (int)((expEndTime - expStartTime) / 1000); 
+		//System.out.println("BottleNeck Time taken = " + (int)((bottleNeckEndTime - bottleNeckStartTime) / 1000) + " seconds.");
+		//System.out.println("Time taken = " + timeTaken + " seconds.\n");
 		
 		return timeTaken;
 	}
