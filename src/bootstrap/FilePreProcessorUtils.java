@@ -2,15 +2,14 @@ package bootstrap;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 
 /**
  * A simple utility class that pre-processes the input dataset file to group all the 
@@ -21,12 +20,13 @@ import com.google.common.io.Files;
  */
 public class FilePreProcessorUtils {
 
+	private static String inputFileLoc = "/home/shishir/DMProject/resources/synthetic_data_generator/T20.I6.D10000K.raw";//args[0]; // Complete source file path as input
+	private static String outputFileLoc = "/home/shishir/workspace/DMProject/data/T20.I6.D10000K"; //args[1]; // Complete destination file path as input
+
+	private static int batchWriteThreshold = 10000;
+	
 	public static void main(String[] args) throws IOException{
-		String inputFileLoc = args[0]; // Complete source file path as input
-		String outputFileLoc = args[1]; // Complete destination file path as input
-		
-		List<String> txnLines = readTxnLines(inputFileLoc);
-		writeTxnLines(txnLines, outputFileLoc);
+		readAndBatchWriteTxnLines(inputFileLoc);
 		System.out.println("File pre-processing completed for dataset " + inputFileLoc);
 	}
 	
@@ -34,7 +34,7 @@ public class FilePreProcessorUtils {
 	 * Reads all the lines in a input file and concatenates items belonging to same transaction as
 	 * space separated values.
 	 */
-	private static List<String> readTxnLines(String inputFileLoc)
+	private static void readAndBatchWriteTxnLines(String inputFileLoc) throws IOException
 	{
 		Map<Integer, List<Integer>> txnItemsMap = Maps.newLinkedHashMap();
 		List<String> txnLines = Lists.newArrayList();
@@ -47,6 +47,7 @@ public class FilePreProcessorUtils {
 			System.err.println("Failed to read the dataset file . Reason : " + e);
 		}
 		
+		int countTid = 0;
 		while(fileScanner.hasNext()) {
 			String currLine = fileScanner.nextLine().trim();
 			String[] words = currLine.split("[\\s\\t]+");
@@ -60,11 +61,32 @@ public class FilePreProcessorUtils {
 				items.add(currItemId);
 			}
 			else {
+				// Write to file in batches
+				if(countTid % batchWriteThreshold == 0) {
+					for(Map.Entry<Integer, List<Integer>> entry : txnItemsMap.entrySet()) {
+						StringBuilder builder = new StringBuilder();
+						builder.append(entry.getKey().toString()).append(" ");
+						for(Integer item : entry.getValue()) {
+							builder.append(item.toString()).append(" ");
+						}
+						
+						txnLines.add(builder.toString().trim());
+					}
+					
+					writeTxnLines(txnLines, outputFileLoc);
+					
+					txnItemsMap = Maps.newLinkedHashMap();
+					txnLines = Lists.newArrayList();
+					System.out.println("#wrote txns : " + countTid);
+				}
+
+				++countTid;
 				items = Lists.newArrayList(currItemId);
 			}
-			
 			txnItemsMap.put(currTid, items);
+			
 		}
+
 		fileScanner.close();
 		
 		for(Map.Entry<Integer, List<Integer>> entry : txnItemsMap.entrySet()) {
@@ -77,8 +99,9 @@ public class FilePreProcessorUtils {
 			txnLines.add(builder.toString().trim());
 		}
 		
-		System.out.println("Number of transactions in the dataset : " + txnLines.size());
-		return txnLines;
+		writeTxnLines(txnLines, outputFileLoc);
+		
+		System.out.println("Number of transactions in the dataset : " + countTid);
 	}
 	
 	/*
@@ -89,10 +112,12 @@ public class FilePreProcessorUtils {
 	{
 		boolean isWriteDone = false;
 		File opFile = new File(outputFileLoc);
-		BufferedWriter writer = Files.newWriter(opFile, Charset.defaultCharset());
+		BufferedWriter writer = new BufferedWriter(new FileWriter(opFile, true));
 		for(String line : txnLines) {
-			writer.write(line);writer.newLine();
+			writer.write(line);
+			writer.newLine();
 		}
+
 		writer.flush();
 		writer.close();
 		

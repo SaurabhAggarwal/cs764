@@ -41,7 +41,7 @@ public class Apriori {
 	
 	public static void main(String[] args)
 	{
-		//runExperiment(Dataset.T10_I4_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
+		runExperiment(Dataset.T10_I4_D100K, MinSup.POINT_SEVEN_FIVE_PERCENT);
 	}
 
 	/*

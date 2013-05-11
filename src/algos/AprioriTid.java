@@ -42,7 +42,7 @@ public class AprioriTid {
 	
 	public static void main(String[] args)
 	{
-		//runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
+		runExperiment(Dataset.T5_I2_D100K, MinSup.POINT_TWO_FIVE_PERCENT);
 	}
 	
 	/* 
@@ -186,7 +186,11 @@ public class AprioriTid {
 			*/
 
 			candidateItemsetsCountPerPass.add(candidateItemsets[k].getItemsets().length);
-			candidateItemsetsBarCountPerPass.add(candidateItemsetBars[k].getItemsetbars().size());
+			int numCandSetsInItemsetBar = 0;
+			for(ItemSetBar itemsetbar : candidateItemsetBars[k].getItemsetbars()) {
+				numCandSetsInItemsetBar += itemsetbar.getCandidateItemsetId().size();
+			}
+			candidateItemsetsBarCountPerPass.add(numCandSetsInItemsetBar);
 		}
 		/*
 		try {
